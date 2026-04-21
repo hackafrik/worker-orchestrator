@@ -8,7 +8,7 @@ description: >
   mentions "opencode workers," "codex workers," "parallel execution,"
   "multi-agent workflow," "spawn workers," "orchestrate," or "supervise agents."
   Do NOT use this skill for simple one-step tasks that Hermes can handle directly.
-version: 1.1.0
+version: 1.2.0
 author: hackafrik
 license: MIT
 metadata:
@@ -31,11 +31,11 @@ while workers handle the heavy lifting on their own model/provider configs.
 Hermes (Orchestrator)
     │
     ├── Decomposes task into subtasks
-    ├── Spawns workers (max 5 parallel)
+    ├── Spawns workers (max 6 parallel, max 3 per provider)
     ├── Monitors progress via process() tools
     ├── Evaluates worker output
     ├── Gives feedback / respawns if needed
-    ├── Falls back OpenCode → Codex on failure
+    ├── Rebalances work across OpenCode + Codex pools
     └── Synthesizes final deliverable
 ```
 
@@ -68,7 +68,23 @@ Break the user's task into 2-5 independent subtasks. Each subtask should:
 - Subtask B: "Write pytest tests for auth endpoints"
 - Subtask C: "Write README with setup and API usage"
 
-### Step 2: Prepare Workdirs & Spawn Workers (Max 5 Parallel)
+### Step 2: Prepare Workdirs & Spawn Workers (Max 6 Parallel)
+
+**Provider allocation model:**
+- Total active workers across all providers: **max 6**
+- OpenCode active workers: **max 3**
+- Codex active workers: **max 3**
+- Use both providers concurrently when useful. This is a mixed fleet, not a one-way fallback chain.
+- Pick the split per phase based on task fit, but never exceed either the global cap or the per-provider cap.
+
+**Valid examples:**
+- 3 OpenCode + 3 Codex = 6 total
+- 3 OpenCode + 1 Codex = 4 total
+- 2 OpenCode + 3 Codex = 5 total
+
+**Invalid examples:**
+- 4 OpenCode + 2 Codex = 6 total, but OpenCode exceeds its cap
+- 3 OpenCode + 4 Codex = 7 total, exceeds both caps
 
 **CRITICAL: Workers are sandboxed.** OpenCode/Codex cannot access files outside their workdir. If workers need to read existing project files, copy them into the workdir BEFORE spawning.
 
@@ -193,7 +209,7 @@ For any FAILED worker:
 
 1. **Analyze why it failed** — which criteria scored low?
 2. **Generate specific corrective feedback** — tell the worker exactly what to fix
-3. **Respawn** with the same provider (or fallback if provider failed)
+3. **Respawn or rebalance** — retry with the same provider if appropriate, or shift the next attempt to the other provider if that is the better fit and capacity allows
 
 **Respawn prompt template:**
 ```
@@ -214,9 +230,10 @@ Please redo with these corrections: [specific instructions]
 - If user feedback arrives mid-orchestration, spawn workers to address it
 
 **Rules for dynamic spawning:**
-- Count total ACTIVE workers (running + pending). Never exceed 5.
-- Workers that have finished (DONE/FAILED) no longer count toward the limit.
-- Example: 3 workers finish, 2 still running → you can spawn up to 3 more.
+- Count total ACTIVE workers (running + pending). Never exceed 6.
+- Count ACTIVE workers per provider. Never exceed 3 OpenCode workers or 3 Codex workers at once.
+- Workers that have finished (DONE/FAILED) no longer count toward either limit.
+- Example: 2 OpenCode and 1 Codex are still running. You can spawn up to 3 more workers, but no more than 1 additional OpenCode and no more than 2 additional Codex.
 
 **Dynamic spawn triggers:**
 1. **Gap filling:** Worker A found 5 bugs but only fixed 3 → spawn Worker D to fix the remaining 2
@@ -236,13 +253,27 @@ Please redo with these corrections: [specific instructions]
 8. Synthesize A + B2 + C + D
 ```
 
-### Step 7: Fallback Chain
+### Step 7: Provider Rebalancing
 
-If OpenCode fails (crash, no output, bad output after respawn):
+Do NOT treat Codex as a simple last-ditch fallback. Use OpenCode and Codex as two concurrent worker pools.
 
-1. **First fallback:** Respawn same task with OpenCode (different wording)
-2. **Second fallback:** Spawn with Codex: `codex exec 'task'`
-3. **Last resort:** Do the subtask directly in Hermes (this session)
+**Pool limits:**
+- OpenCode: max 3 active workers
+- Codex: max 3 active workers
+- Global total: max 6 active workers
+
+**Provider selection rules:**
+1. Start with the provider mix that best fits the phase of work.
+2. If one provider is saturated, place the next eligible subtask on the other provider if capacity exists there.
+3. If a worker fails, first decide whether the failure was task-specific or provider-specific.
+4. Retry within the same provider when the failure looks prompt-specific.
+5. Reassign to the other provider when the original provider looks unreliable for that task class or its pool is saturated.
+6. Last resort: do the subtask directly in Hermes.
+
+**Examples:**
+- Review-heavy phase: 3 OpenCode + 2 Codex, keeping one global slot free for follow-on work
+- Fix-heavy phase: 2 OpenCode + 3 Codex if Codex is producing better patch quality
+- Rebalance case: OpenCode has 3 active workers and a new high-priority subtask appears → assign it to Codex if Codex has capacity instead of waiting for OpenCode to free a slot
 
 Do NOT use Claude Code anywhere in this workflow.
 
@@ -295,7 +326,8 @@ Review the code and tell me what you find.
 
 ## Safety & Limits
 
-- **Max 5 parallel workers** — never exceed this
+- **Max 6 parallel workers total** — never exceed this
+- **Max 3 OpenCode workers** and **max 3 Codex workers** active at once
 - **Max 2 respawns per subtask**
 - **Kill stuck workers** — if no output for 5+ minutes, kill and retry
 - **Clean up temp dirs** — after synthesis, remove worker temp directories
