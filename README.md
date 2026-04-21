@@ -90,7 +90,7 @@ This repo is published as a public GitHub repository and is directly consumable 
 ## Requirements
 
 - [Hermes Agent](https://github.com/NousResearch/hermes-agent)
-- [OpenCode CLI](https://github.com/opencode-ai/opencode) installed and authenticated
+- [OpenCode CLI](https://github.com/anomalyco/opencode) installed and authenticated
 - [Codex CLI](https://github.com/openai/codex) installed and authenticated
 
 ## Usage
