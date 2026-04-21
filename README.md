@@ -81,6 +81,8 @@ Hermes auto-discovers skills from `~/.hermes/skills/` on startup.
 
 This repo is published as a public GitHub repository and is directly consumable by the open Agent Skills ecosystem.
 
+> **Note:** This project is also mirrored on [GitLab](https://gitlab.com/hackafrik/worker-orchestrator).
+
 - GitHub: public source of truth for the skill
 - skills.sh / Agent Skills: installable as `hackafrik/worker-orchestrator`
 - Hermes Skills Hub: supports GitHub and skills.sh sources, so public GitHub compatibility matters
