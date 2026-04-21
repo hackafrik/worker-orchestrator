@@ -18,7 +18,7 @@ description: >
   Hermes handles directly with its own tools. Do NOT trigger on generic
   "batch process", "async workers", "map-reduce", or "parallel execution" unless
   the user explicitly mentions codex, opencode, agents, or delegation.
-version: 1.4.0
+version: 1.4.1
 author: hackafrik
 license: MIT
 metadata:
