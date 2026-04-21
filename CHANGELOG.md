@@ -9,8 +9,8 @@
   multi-line prompts containing quotes, backticks, and newlines.
 - `scripts/evaluate_worker_logs.py` helper for parsing worker terminal output into
   structured JSON findings.
-- Provider circuit-breaker documentation: detect 429 rate-limit errors and respawn
-  on alternate provider immediately.
+- Provider circuit-breaker: detect 429 rate-limit errors and auto-respawn
+  on alternate provider immediately. Includes `scripts/circuit_breaker.py` helper.
 
 ### Changed
 - Description trigger keywords optimized: added `use opencode`, `use codex`,

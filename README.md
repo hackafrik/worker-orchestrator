@@ -124,6 +124,8 @@ Example invalid fleet mixes:
 | Script | Purpose |
 |--------|---------|
 | `scripts/evaluate_output.py` | Score worker output against criteria (Presence / Correctness / Completeness / Quality) |
+| `scripts/evaluate_worker_logs.py` | Parse worker terminal output into structured JSON findings |
+| `scripts/circuit_breaker.py` | Detect rate-limit / API exhaustion errors and recommend respawn actions |
 | `scripts/synthesize_outputs.py` | Merge multiple worker outputs into one deliverable |
 
 

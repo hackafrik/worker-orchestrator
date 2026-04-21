@@ -198,6 +198,38 @@ process(action="log", session_id="WORKER_SESSION_ID", limit=50)
 - If a worker times out, read whatever output was produced before the timeout
 - Partial output often contains actionable findings even if the worker didn't finish
 
+**Circuit-breaker: detect API rate-limiting during monitoring**
+
+Before evaluating output quality, check if the worker failed due to provider rate-limiting (not task quality). Use the circuit-breaker helper:
+
+```python
+import subprocess, json, os
+
+# After capturing worker output in 'stdout'
+# Write output to temp file for the helper
+with open("/tmp/cb_check.txt", "w") as f:
+    f.write(stdout)
+
+cb = subprocess.run(
+    ["python3", "scripts/circuit_breaker.py", "/tmp/cb_check.txt"],
+    capture_output=True, text=True, cwd=orchestrator_dir
+)
+result = json.loads(cb.stdout)
+
+if result["is_rate_limited"]:
+    print(f"RATE LIMIT DETECTED: {result['provider']} — severity {result['severity']}")
+    print(f"Recommendation: {result['recommendation']}")
+    # Immediately kill the rate-limited worker and respawn on alternate provider
+    # Do NOT wait for the reset timer — swap providers immediately
+```
+
+**Circuit-breaker rules:**
+- If `severity == "critical"` (reset >5min): kill worker, respawn same task on alternate provider immediately
+- If `severity == "high"` (reset >1min): kill worker, respawn same task on alternate provider immediately
+- If `severity == "medium"` (reset <1min): brief 30s pause, then retry same provider once; if still rate-limited, respawn on alternate
+- If both providers are rate-limited: queue the task, synthesize what you have from other workers, flag remaining tasks for user review
+- Count respawns from circuit-breaker against the max 2 respawns per subtask limit
+
 ### Step 4: Evaluate Output
 
 For each completed worker, evaluate its output using this rubric:
@@ -226,6 +258,12 @@ For any FAILED worker:
 1. **Analyze why it failed** — which criteria scored low?
 2. **Generate specific corrective feedback** — tell the worker exactly what to fix
 3. **Respawn or rebalance** — retry with the same provider if appropriate, or shift the next attempt to the other provider if that is the better fit and capacity allows
+
+**Circuit-breaker respawns (provider rate-limiting):**
+- If the worker failed due to API rate-limit (detected by `scripts/circuit_breaker.py`), do NOT generate quality feedback
+- Immediately respawn the same task on the alternate provider with no changes to the task description
+- Circuit-breaker respawns bypass the normal "analyze why it failed" step because the failure is infrastructure, not quality
+- Count circuit-breaker respawns against the max 2 respawns per subtask limit
 
 **Respawn prompt template:**
 ```
@@ -353,9 +391,11 @@ Review the code and tell me what you find.
 
 ## Helper Scripts
 
-Use the bundled scripts for evaluation and synthesis:
+Use the bundled scripts for evaluation, circuit-breaking, and synthesis:
 
 - `scripts/evaluate_output.py` — structured evaluation of worker output
+- `scripts/evaluate_worker_logs.py` — parse worker terminal output into structured JSON findings
+- `scripts/circuit_breaker.py` — detect rate-limit / API exhaustion errors and recommend respawn actions
 - `scripts/synthesize_outputs.py` — merge multiple worker outputs
 
 ## Pitfalls & Lessons Learned
