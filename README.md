@@ -1,6 +1,6 @@
 # Worker Orchestrator
 
-A [Hermes Agent](https://github.com/hacktheon/hacktheon) skill that turns your AI agent into a fleet commander. Spawn external worker processes (OpenCode, Codex), monitor them in real-time, evaluate their output, and dynamically respawn with corrective feedback — all while staying under a 5-worker parallel limit.
+A [Hermes Agent](https://github.com/NousResearch/hermes-agent) skill that turns your AI agent into a fleet commander. Spawn external worker processes (OpenCode, Codex), monitor them in real-time, evaluate their output, and dynamically respawn with corrective feedback — all while staying under a 5-worker parallel limit.
 
 ## Why
 
@@ -47,12 +47,35 @@ Running everything on one expensive model burns tokens fast. This skill splits t
 
 ## Installation
 
+Option 1 — direct GitHub clone into Hermes:
+
 ```bash
-# Clone into your Hermes skills directory
 git clone https://github.com/hackafrik/worker-orchestrator.git ~/.hermes/skills/worker-orchestrator
 ```
 
+Option 2 — install through the open Agent Skills ecosystem (`skills.sh`):
+
+```bash
+npx skills add hackafrik/worker-orchestrator
+```
+
+Verified with:
+
+```bash
+npx skills add hackafrik/worker-orchestrator -l
+```
+
 Hermes auto-discovers skills from `~/.hermes/skills/` on startup.
+
+## Public Discovery / Publishing Notes
+
+This repo is published as a public GitHub repository and is directly consumable by the open Agent Skills ecosystem.
+
+- GitHub: public source of truth for the skill
+- skills.sh / Agent Skills: installable as `hackafrik/worker-orchestrator`
+- Hermes Skills Hub: supports GitHub and skills.sh sources, so public GitHub compatibility matters
+- Hermes Atlas: community-curated ecosystem map; public docs do not currently expose a self-serve submission API, so inclusion appears curator-driven rather than automatic
+
 
 ## Requirements
 
