@@ -126,9 +126,6 @@ Example invalid fleet mixes:
 | `scripts/evaluate_output.py` | Score worker output against criteria (Presence / Correctness / Completeness / Quality) |
 | `scripts/synthesize_outputs.py` | Merge multiple worker outputs into one deliverable |
 
-## Example Session
-
-See the [Auto-Apply refactor session](https://github.com/hackafrik/Auto-Apply) where Hermes supervised a multi-worker remediation pass that fixed high-severity bugs, added tests, and cleared security vulnerabilities.
 
 ## License
 
