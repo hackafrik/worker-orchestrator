@@ -1,17 +1,24 @@
 ---
 name: worker-orchestrator
 description: >
-  Orchestrate external AI worker processes (OpenCode CLI, Codex CLI) to handle
-  complex tasks in parallel. Use this skill whenever the user wants to delegate,
-  distribute, fan-out, offload, or scale out work across multiple agents or models.
-  Trigger on: "opencode workers", "codex workers", "parallel execution",
-  "run in parallel", "multi-agent workflow", "agent swarm", "subagent",
-  "spawn workers", "spawn agents", "orchestrate workers", "orchestrate agents",
-  "supervise agents", "supervise workers", "divide and conquer", "map-reduce",
-  "batch process", "async workers", "cheaper model", "worker pool",
-  "team of agents", "distribute tasks", "offload to codex/opencode".
-  Do NOT use this skill for simple one-step tasks that Hermes can handle directly.
-version: 1.3.0
+  Orchestrate external AI CLI worker processes (OpenCode CLI, Codex CLI) to handle
+  complex multi-step tasks in parallel by spawning, monitoring, evaluating, and
+  synthesizing their outputs. Use this skill whenever the user wants to delegate
+  coding or analysis work to external agents, run multiple CLI agents concurrently,
+  distribute tasks across providers, fan-out review or fix jobs, or scale out work
+  beyond what a single model can do. Trigger on: "use opencode", "use codex",
+  "spawn opencode", "spawn codex", "run opencode", "run codex", "opencode workers",
+  "codex workers", "parallel agents", "multi-agent workflow", "agent swarm",
+  "spawn agents", "spawn workers", "orchestrate workers", "orchestrate agents",
+  "supervise agents", "supervise workers", "divide and conquer", "distribute tasks",
+  "fan out", "offload to codex", "offload to opencode", "delegate to codex",
+  "delegate to opencode", "run agents in parallel", "parallel code review",
+  "parallel fixes", "team of agents", "worker pool", "cheaper model".
+  Do NOT use for simple one-step file reads, web searches, or single commands that
+  Hermes handles directly with its own tools. Do NOT trigger on generic
+  "batch process", "async workers", "map-reduce", or "parallel execution" unless
+  the user explicitly mentions codex, opencode, agents, or delegation.
+version: 1.2.0
 author: hackafrik
 license: MIT
 metadata:
@@ -106,16 +113,20 @@ cd /tmp/worker-a && git init
 
 `terminal(background=true)` with `opencode run` hangs indefinitely — the opencode TUI blocks on a pseudo-TTY that never receives input. The output stream stays empty and the process never completes.
 
-**The reliable method:** Spawn workers via `execute_code` using Python `subprocess.Popen`:
+**The reliable method:** Spawn workers via `execute_code` using Python `subprocess.Popen` with stdin piping:
 
 ```python
 from hermes_tools import terminal
-import subprocess
-import os
+import subprocess, os, pathlib
+
+# Write the prompt to a file first
+prompt_path = pathlib.Path("/tmp/worker-a/prompt.txt")
+prompt_path.write_text("YOUR MULTI-LINE PROMPT HERE")
 
 proc = subprocess.Popen(
-    ["opencode", "run", "YOUR_PROMPT_HERE"],
+    ["opencode", "run", "--dir", "/tmp/worker-a"],
     cwd="/tmp/worker-a",
+    stdin=open(prompt_path, "r"),
     stdout=subprocess.PIPE,
     stderr=subprocess.STDOUT,
     text=True,
@@ -123,6 +134,8 @@ proc = subprocess.Popen(
 )
 stdout, _ = proc.communicate(timeout=300)
 ```
+
+**Why stdin piping:** It avoids all shell-quoting issues with multi-line prompts containing quotes, backticks, and newlines. Passing the prompt as a positional argument (`opencode run "prompt text"`) is fragile and often hangs or misparses.
 
 **Trade-off:** `execute_code` workers cannot be monitored live with `process()` tools. You get all output when the process exits. For live monitoring, there is currently no reliable method with opencode.
 
@@ -350,14 +363,29 @@ Use the bundled scripts for evaluation and synthesis:
 **`terminal(background=true)` with `opencode run` hangs indefinitely.**
 The opencode TUI blocks on a pseudo-TTY that never receives input. Output stream stays empty and the process never completes. **Always spawn OpenCode workers via `execute_code` with Python `subprocess.Popen`.** Trade-off: you lose live `process()` monitoring and must wait for the subprocess to return all output at once.
 
-**Shell quoting with `opencode run` is fragile.**
-Complex prompts containing quotes, newlines, or backticks will break shell parsing when passed directly to `terminal(command="opencode run '...'")`. Safer approach: write the prompt to a file, then reference it:
-```bash
-# Write prompt to file first
-echo "your prompt here" > /tmp/prompt.txt
-# Then spawn with file reference
-opencode run "$(cat /tmp/prompt.txt)"
+**The most reliable spawn method for OpenCode is stdin piping via `execute_code`:**
+```python
+from hermes_tools import terminal
+import subprocess, os, pathlib
+
+prompt_path = pathlib.Path("/tmp/prompt.txt")
+prompt_path.write_text("Your multi-line prompt here...")
+
+proc = subprocess.Popen(
+    ["opencode", "run", "--dir", "/tmp/worker-a"],
+    cwd="/tmp/worker-a",
+    stdin=open(prompt_path, "r"),
+    stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    text=True,
+    env=os.environ.copy()
+)
+stdout, _ = proc.communicate(timeout=300)
 ```
+Stdin piping avoids all shell-quoting issues and works reliably with multi-line prompts containing quotes, backticks, and newlines.
+
+**Shell quoting with `opencode run` is fragile.**
+Complex prompts containing quotes, newlines, or backticks will break shell parsing when passed directly to `terminal(command="opencode run '...'")`. Even `echo > file && opencode run "$(cat file)"` can fail if the prompt contains characters that interact badly with shell expansion. **Prefer stdin piping (above) for all non-trivial prompts.**
 
 **Multiple workers modifying the same config files will overwrite each other.**
 If Worker A updates `package.json` for security fixes and Worker B updates `package.json` to add test dependencies, copying both `package.json` files sequentially will cause the second copy to overwrite the first. **Always diff and merge config files** rather than blind copy:
@@ -383,6 +411,12 @@ If you `git init` an empty workdir BEFORE copying project files, git won't track
 - Copy files first, then `git init && git add -A`
 - Or use `diff original_file modified_file` instead of `git diff`
 
+**Lean copied workdirs can break npm/TypeScript verification.**
+If you exclude `node_modules` to keep worker copies small and fast, commands like `npm run lint`, `tsc --noEmit`, or any script depending on locally installed binaries may fail with errors like `tsc: not found` inside the worker workdir even though the real repo validates fine. Mitigations:
+- If worker-side compilation is required, copy `node_modules` too or run `npm install` in the workdir.
+- If you want fast worker spawn, let workers patch code without full dependency trees, then do the authoritative verification in the real repo after merging the approved changes.
+- Do not treat missing local toolchain in a lean workdir as proof the patch is bad.
+
 **Provider API rate limits hang workers silently.**
 When OpenCode or Codex hits a provider rate limit (e.g., OpenAI 429), the process may block indefinitely rather than exiting. There is no automatic circuit breaker. Mitigations:
 - Pre-check provider quota before spawning large batches.
@@ -399,8 +433,8 @@ When OpenCode or Codex hits a provider rate limit (e.g., OpenAI 429), the proces
    - Worker A: Core CSV→JSON conversion logic
    - Worker B: Click/Typer CLI interface
    - Worker C: pytest test suite
-2. Spawn 3 OpenCode workers in parallel (via `terminal(background=true)`)
-3. Monitor all 3 via `process(action="log")` every 15s
+2. Spawn 3 OpenCode workers in parallel via `execute_code` + Python `subprocess.Popen`
+3. Capture each worker's stdout/stderr when the subprocess exits and inspect terminal output before trusting files alone
 4. Evaluate outputs (all pass)
 5. Synthesize into single project at user-requested location
 6. Report: "3 workers completed. Core logic + CLI + tests merged into ~/csv2json/"
