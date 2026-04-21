@@ -2,13 +2,16 @@
 name: worker-orchestrator
 description: >
   Orchestrate external AI worker processes (OpenCode CLI, Codex CLI) to handle
-  complex tasks in parallel. Use this skill whenever the user wants to delegate
-  work to cheaper models, spawn multiple agents, parallelize a project, split
-  costs across models, or supervise external workers. Also trigger when the user
-  mentions "opencode workers," "codex workers," "parallel execution,"
-  "multi-agent workflow," "spawn workers," "orchestrate," or "supervise agents."
+  complex tasks in parallel. Use this skill whenever the user wants to delegate,
+  distribute, fan-out, offload, or scale out work across multiple agents or models.
+  Trigger on: "opencode workers", "codex workers", "parallel execution",
+  "run in parallel", "multi-agent workflow", "agent swarm", "subagent",
+  "spawn workers", "spawn agents", "orchestrate workers", "orchestrate agents",
+  "supervise agents", "supervise workers", "divide and conquer", "map-reduce",
+  "batch process", "async workers", "cheaper model", "worker pool",
+  "team of agents", "distribute tasks", "offload to codex/opencode".
   Do NOT use this skill for simple one-step tasks that Hermes can handle directly.
-version: 1.2.0
+version: 1.3.0
 author: hackafrik
 license: MIT
 metadata:
@@ -379,6 +382,13 @@ When workers copy entire projects, `synthesize_outputs.py` will ingest node_modu
 If you `git init` an empty workdir BEFORE copying project files, git won't track the copied files as modifications. Either:
 - Copy files first, then `git init && git add -A`
 - Or use `diff original_file modified_file` instead of `git diff`
+
+**Provider API rate limits hang workers silently.**
+When OpenCode or Codex hits a provider rate limit (e.g., OpenAI 429), the process may block indefinitely rather than exiting. There is no automatic circuit breaker. Mitigations:
+- Pre-check provider quota before spawning large batches.
+- Set `subprocess.Popen` timeout aggressively (60-90s) when limits are tight.
+- If a worker times out with no output, assume provider exhaustion and respawn on an alternate provider or local model.
+- Consider adding a `resets_in_seconds` sniff in worker logs to schedule retries.
 
 ## Example Session
 
