@@ -1,0 +1,306 @@
+{
+  "work_dir": "/tmp/worker-orchestrator-cli-parity-67bidtnf",
+  "v1_repo": "/home/hackafrik/worker-orchestrator",
+  "v2_repo": "/home/hackafrik/worker-orchestrator-v2",
+  "scenarios": [
+    {
+      "scenario": "cli_success",
+      "expected_status": "SUCCEEDED",
+      "v1_helper_flow": {
+        "raw_process_exit_code": 0,
+        "log_eval": {
+          "exit_code": 0,
+          "stdout": {
+            "provider": "opencode",
+            "boot_success": true,
+            "boot_details": "opencode v1.14.19 booted; MCP servers loaded; Session created: ses_success123",
+            "api_limit_hit": false,
+            "api_limit_details": "No API limit indicators found",
+            "completion_detected": true,
+            "completion_markers": [
+              "Wrote to",
+              "Task complete"
+            ],
+            "hang_detected": false,
+            "hang_reason": "Normal exit inferred",
+            "score": 5,
+            "feedback": "Worker booted, executed, and produced completion markers."
+          },
+          "stderr": ""
+        },
+        "output_eval": {
+          "exit_code": 0,
+          "stdout": {
+            "presence": {
+              "passed": true,
+              "reason": "File exists, 2 non-empty lines, 98 bytes"
+            },
+            "correctness": {
+              "score": 4,
+              "reason": "All expected keywords present; No forbidden patterns found"
+            },
+            "completeness": {
+              "score": 3,
+              "reason": "All required sections present; Very short output (13 words)"
+            },
+            "quality": {
+              "score": 3,
+              "reason": "Line lengths reasonable"
+            },
+            "average": 3.33,
+            "passed": true,
+            "feedback": "Output meets all criteria. Good work."
+          },
+          "stderr": ""
+        },
+        "report_exists": true,
+        "derived_status": "SUCCEEDED",
+        "expected_status": "SUCCEEDED",
+        "passed": true
+      },
+      "v2_orchestrator_flow": {
+        "orchestrator": {
+          "exit_code": 0,
+          "stdout": {
+            "task_id": "cli_success-task",
+            "phase": 0,
+            "final_status": "SUCCEEDED",
+            "monitor": {
+              "success": true,
+              "status": "FAILED",
+              "stdout": "opencode v1.14.19 boot\nmcp key=exa connected\nsession id=ses_success123\nWrote to <WORK_DIR>/cli_success/v2/report.md\nTask complete\n",
+              "stderr": "",
+              "artifacts": [
+                {
+                  "path": "<WORK_DIR>/cli_success/v2/cli_success-task_task_spec.json",
+                  "kind": "json",
+                  "size_bytes": 837
+                },
+                {
+                  "path": "<WORK_DIR>/cli_success/v2/cli_success-task.json",
+                  "kind": "json",
+                  "size_bytes": 837
+                },
+                {
+                  "path": "<WORK_DIR>/cli_success/v2/report.md",
+                  "kind": "report",
+                  "size_bytes": 98
+                }
+              ],
+              "metrics": {
+                "runtime_seconds": 0.12,
+                "cost_usd": null,
+                "tokens_in": null,
+                "tokens_out": null
+              },
+              "heartbeat_at": "2026-04-22T19:44:38.006005Z",
+              "raw_state": {
+                "pid": 300194,
+                "stdout_size": 164,
+                "stderr_size": 0
+              }
+            },
+            "evaluation": {
+              "success": true,
+              "score": 1.0,
+              "feedback": "Passed 2/2 checks.",
+              "rubric_breakdown": {
+                "presence": "pass",
+                "artifact_compliance": "pass",
+                "format_compliance": "not_checked"
+              },
+              "evidence": {
+                "output_markers": [
+                  "Task complete"
+                ],
+                "artifact_paths": [
+                  "<WORK_DIR>/cli_success/v2/report.md"
+                ]
+              }
+            },
+            "cost_report": {
+              "success": true,
+              "total_cost_usd": 0.0,
+              "total_tokens_in": 0,
+              "total_tokens_out": 0,
+              "total_runtime_seconds": 0.12,
+              "by_worker": {
+                "cli_success-task": {
+                  "cost_usd": 0.0,
+                  "tokens_in": 0,
+                  "tokens_out": 0,
+                  "runtime_seconds": 0.12,
+                  "records": 1
+                }
+              },
+              "by_category": {
+                "CLI": {
+                  "cost_usd": 0.0,
+                  "tokens_in": 0,
+                  "tokens_out": 0,
+                  "runtime_seconds": 0.12,
+                  "records": 1
+                }
+              }
+            }
+          },
+          "stderr": ""
+        },
+        "report_exists": true,
+        "final_status": "SUCCEEDED",
+        "expected_status": "SUCCEEDED",
+        "passed": true
+      },
+      "parity": {
+        "both_match_expectation": true,
+        "status_match": true,
+        "artifact_match": true
+      },
+      "passed": true
+    },
+    {
+      "scenario": "cli_failure",
+      "expected_status": "FAILED",
+      "v1_helper_flow": {
+        "raw_process_exit_code": 1,
+        "log_eval": {
+          "exit_code": 0,
+          "stdout": {
+            "provider": "opencode",
+            "boot_success": true,
+            "boot_details": "opencode v1.14.19 booted; MCP servers loaded; Session created: ses_failure123",
+            "api_limit_hit": true,
+            "api_limit_details": "Provider quota exhausted; HTTP 429 rate limit; Rate limit detected; Quota resets in 1300s",
+            "completion_detected": false,
+            "completion_markers": [],
+            "hang_detected": true,
+            "hang_reason": "Booted successfully but blocked by API rate limit; process hung waiting for quota",
+            "score": 1,
+            "feedback": "Provider API limit blocked execution: Provider quota exhausted; HTTP 429 rate limit; Rate limit detected; Quota resets in 1300s Recommendation: respawn on alternate provider, use local model, or wait for quota reset."
+          },
+          "stderr": ""
+        },
+        "output_eval": {
+          "exit_code": 0,
+          "stdout": {
+            "presence": {
+              "passed": false,
+              "reason": "File not found: <WORK_DIR>/cli_failure/v1/report.md"
+            },
+            "correctness": {
+              "score": 1,
+              "reason": "N/A - no output"
+            },
+            "completeness": {
+              "score": 1,
+              "reason": "N/A - no output"
+            },
+            "quality": {
+              "score": 1,
+              "reason": "N/A - no output"
+            },
+            "average": 1.0,
+            "passed": false,
+            "feedback": "Worker produced no output: File not found: <WORK_DIR>/cli_failure/v1/report.md"
+          },
+          "stderr": ""
+        },
+        "report_exists": false,
+        "derived_status": "FAILED",
+        "expected_status": "FAILED",
+        "passed": true
+      },
+      "v2_orchestrator_flow": {
+        "orchestrator": {
+          "exit_code": 0,
+          "stdout": {
+            "task_id": "cli_failure-task",
+            "phase": 0,
+            "final_status": "FAILED",
+            "monitor": {
+              "success": true,
+              "status": "FAILED",
+              "stdout": "opencode v1.14.19 boot\nmcp key=exa connected\nsession id=ses_failure123\nHTTP 429 usage_limit_reached resets_in_seconds: 1300\nrate limit detected\n",
+              "stderr": "",
+              "artifacts": [
+                {
+                  "path": "<WORK_DIR>/cli_failure/v2/cli_failure-task_task_spec.json",
+                  "kind": "json",
+                  "size_bytes": 837
+                },
+                {
+                  "path": "<WORK_DIR>/cli_failure/v2/cli_failure-task.json",
+                  "kind": "json",
+                  "size_bytes": 837
+                }
+              ],
+              "metrics": {
+                "runtime_seconds": 0.12,
+                "cost_usd": null,
+                "tokens_in": null,
+                "tokens_out": null
+              },
+              "heartbeat_at": "2026-04-22T19:44:38.838770Z",
+              "raw_state": {
+                "pid": 300214,
+                "stdout_size": 144,
+                "stderr_size": 0
+              }
+            },
+            "evaluation": {
+              "success": true,
+              "score": 0.0,
+              "feedback": "Passed 0/2 checks.",
+              "rubric_breakdown": {
+                "presence": "fail",
+                "artifact_compliance": "fail",
+                "format_compliance": "not_checked"
+              },
+              "evidence": {
+                "output_markers": [],
+                "artifact_paths": []
+              }
+            },
+            "cost_report": {
+              "success": true,
+              "total_cost_usd": 0.0,
+              "total_tokens_in": 0,
+              "total_tokens_out": 0,
+              "total_runtime_seconds": 0.12,
+              "by_worker": {
+                "cli_failure-task": {
+                  "cost_usd": 0.0,
+                  "tokens_in": 0,
+                  "tokens_out": 0,
+                  "runtime_seconds": 0.12,
+                  "records": 1
+                }
+              },
+              "by_category": {
+                "CLI": {
+                  "cost_usd": 0.0,
+                  "tokens_in": 0,
+                  "tokens_out": 0,
+                  "runtime_seconds": 0.12,
+                  "records": 1
+                }
+              }
+            }
+          },
+          "stderr": ""
+        },
+        "report_exists": false,
+        "final_status": "FAILED",
+        "expected_status": "FAILED",
+        "passed": true
+      },
+      "parity": {
+        "both_match_expectation": true,
+        "status_match": true,
+        "artifact_match": true
+      },
+      "passed": true
+    }
+  ],
+  "all_passed": true
+}

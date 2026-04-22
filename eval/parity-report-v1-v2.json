@@ -1,0 +1,148 @@
+{
+  "work_dir": "/tmp/worker-orchestrator-parity-bht0lxeo",
+  "v1_repo": "/home/hackafrik/worker-orchestrator",
+  "v2_repo": "/home/hackafrik/worker-orchestrator-v2",
+  "cases": [
+    {
+      "name": "evaluate_output",
+      "passed": true,
+      "v1": {
+        "exit_code": 0,
+        "stdout": {
+          "presence": {
+            "passed": true,
+            "reason": "File exists, 7 non-empty lines, 212 bytes"
+          },
+          "correctness": {
+            "score": 4,
+            "reason": "All expected keywords present; No forbidden patterns found"
+          },
+          "completeness": {
+            "score": 3,
+            "reason": "All required sections present; Very short output (24 words)"
+          },
+          "quality": {
+            "score": 3,
+            "reason": "Braces balanced; Line lengths reasonable"
+          },
+          "average": 3.33,
+          "passed": true,
+          "feedback": "Output meets all criteria. Good work."
+        },
+        "stderr": ""
+      },
+      "v2": {
+        "exit_code": 0,
+        "stdout": {
+          "presence": {
+            "passed": true,
+            "reason": "File exists, 7 non-empty lines, 212 bytes"
+          },
+          "correctness": {
+            "score": 4,
+            "reason": "All expected keywords present; No forbidden patterns found"
+          },
+          "completeness": {
+            "score": 3,
+            "reason": "All required sections present; Very short output (24 words)"
+          },
+          "quality": {
+            "score": 3,
+            "reason": "Braces balanced; Line lengths reasonable"
+          },
+          "average": 3.33,
+          "passed": true,
+          "feedback": "Output meets all criteria. Good work."
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "name": "evaluate_worker_logs",
+      "passed": true,
+      "v1": {
+        "exit_code": 0,
+        "stdout": {
+          "provider": "opencode",
+          "boot_success": true,
+          "boot_details": "opencode v1.14.19 booted; MCP servers loaded; Session created: ses_demo123",
+          "api_limit_hit": false,
+          "api_limit_details": "No API limit indicators found",
+          "completion_detected": true,
+          "completion_markers": [
+            "Wrote to",
+            "Task complete"
+          ],
+          "hang_detected": false,
+          "hang_reason": "Normal exit inferred",
+          "score": 5,
+          "feedback": "Worker booted, executed, and produced completion markers."
+        },
+        "stderr": ""
+      },
+      "v2": {
+        "exit_code": 0,
+        "stdout": {
+          "provider": "opencode",
+          "boot_success": true,
+          "boot_details": "opencode v1.14.19 booted; MCP servers loaded; Session created: ses_demo123",
+          "api_limit_hit": false,
+          "api_limit_details": "No API limit indicators found",
+          "completion_detected": true,
+          "completion_markers": [
+            "Wrote to",
+            "Task complete"
+          ],
+          "hang_detected": false,
+          "hang_reason": "Normal exit inferred",
+          "score": 5,
+          "feedback": "Worker booted, executed, and produced completion markers."
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "name": "synthesize_outputs",
+      "passed": true,
+      "v1": {
+        "exit_code": 0,
+        "stdout": {
+          "files_merged": [
+            "main.py",
+            "main.py.worker_b",
+            "utils.py"
+          ],
+          "conflicts": [
+            "./main.py -> renamed to main.py.worker_b"
+          ],
+          "notes": [
+            "Merged 2 code projects into <WORK_DIR>/<MERGED_DIR>",
+            "Resolved 1 file conflicts by renaming"
+          ],
+          "type": "code"
+        },
+        "stderr": ""
+      },
+      "v2": {
+        "exit_code": 0,
+        "stdout": {
+          "files_merged": [
+            "main.py",
+            "main.py.worker_b",
+            "utils.py"
+          ],
+          "conflicts": [
+            "./main.py -> renamed to main.py.worker_b"
+          ],
+          "notes": [
+            "Merged 2 code projects into <WORK_DIR>/<MERGED_DIR>",
+            "Resolved 1 file conflicts by renaming"
+          ],
+          "type": "code"
+        },
+        "stderr": ""
+      }
+    }
+  ],
+  "all_passed": true
+}

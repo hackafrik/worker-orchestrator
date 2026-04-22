@@ -1,0 +1,348 @@
+{
+  "work_dir": "/tmp/worker-orchestrator-realworld-_kur_vhc",
+  "v1_repo": "/home/hackafrik/worker-orchestrator",
+  "v2_repo": "/home/hackafrik/worker-orchestrator-v2",
+  "v1_synthesis": {
+    "exit_code": 0,
+    "stdout": {
+      "files_merged": [
+        "calculator.py",
+        "cli.py",
+        "operations.py"
+      ],
+      "conflicts": [],
+      "notes": [
+        "Merged 3 code projects into <WORK_DIR>/<FLOW_DIR>/<MERGED_DIR>",
+        "No file conflicts detected"
+      ],
+      "output_dir": "<WORK_DIR>/<FLOW_DIR>/<MERGED_DIR>",
+      "type": "code"
+    },
+    "stderr": ""
+  },
+  "v2_manifest": {
+    "exit_code": 0,
+    "stdout": {
+      "phases": [
+        {
+          "phase": 0,
+          "results": [
+            {
+              "task_id": "realworld-main",
+              "phase": 0,
+              "final_status": "SUCCEEDED",
+              "monitor": {
+                "success": true,
+                "status": "FAILED",
+                "stdout": "DONE main\n",
+                "stderr": "",
+                "artifacts": [
+                  {
+                    "path": "<WORK_DIR>/<FLOW_DIR>/realworld-main/artifacts/calculator.py",
+                    "kind": "other",
+                    "size_bytes": 80
+                  }
+                ],
+                "metrics": {
+                  "runtime_seconds": 0.12,
+                  "cost_usd": null,
+                  "tokens_in": null,
+                  "tokens_out": null
+                },
+                "heartbeat_at": "2026-04-22T20:09:53.984787Z",
+                "raw_state": {
+                  "pid": 324954,
+                  "stdout_size": 10
+                }
+              },
+              "evaluation": {
+                "success": true,
+                "score": 1.0,
+                "feedback": "Passed 2/2 checks.",
+                "rubric_breakdown": {
+                  "presence": "pass",
+                  "artifact_compliance": "pass"
+                },
+                "evidence": {
+                  "output_markers": [],
+                  "artifact_paths": [
+                    "<WORK_DIR>/<FLOW_DIR>/realworld-main/artifacts/calculator.py"
+                  ]
+                }
+              },
+              "cost_report": {
+                "success": true,
+                "total_cost_usd": 0.0,
+                "total_tokens_in": 0,
+                "total_tokens_out": 0,
+                "total_runtime_seconds": 0.12,
+                "by_worker": {
+                  "realworld-main": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                },
+                "by_category": {
+                  "PYTHON_SCRIPT": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                }
+              }
+            },
+            {
+              "task_id": "realworld-cli",
+              "phase": 0,
+              "final_status": "SUCCEEDED",
+              "monitor": {
+                "success": true,
+                "status": "FAILED",
+                "stdout": "DONE cli\n",
+                "stderr": "",
+                "artifacts": [
+                  {
+                    "path": "<WORK_DIR>/<FLOW_DIR>/realworld-cli/artifacts/cli.py",
+                    "kind": "other",
+                    "size_bytes": 496
+                  }
+                ],
+                "metrics": {
+                  "runtime_seconds": 0.12,
+                  "cost_usd": null,
+                  "tokens_in": null,
+                  "tokens_out": null
+                },
+                "heartbeat_at": "2026-04-22T20:09:54.655213Z",
+                "raw_state": {
+                  "pid": 324973,
+                  "stdout_size": 9
+                }
+              },
+              "evaluation": {
+                "success": true,
+                "score": 1.0,
+                "feedback": "Passed 2/2 checks.",
+                "rubric_breakdown": {
+                  "presence": "pass",
+                  "artifact_compliance": "pass"
+                },
+                "evidence": {
+                  "output_markers": [],
+                  "artifact_paths": [
+                    "<WORK_DIR>/<FLOW_DIR>/realworld-cli/artifacts/cli.py"
+                  ]
+                }
+              },
+              "cost_report": {
+                "success": true,
+                "total_cost_usd": 0.0,
+                "total_tokens_in": 0,
+                "total_tokens_out": 0,
+                "total_runtime_seconds": 0.12,
+                "by_worker": {
+                  "realworld-cli": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                },
+                "by_category": {
+                  "PYTHON_SCRIPT": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                }
+              }
+            },
+            {
+              "task_id": "realworld-ops",
+              "phase": 0,
+              "final_status": "SUCCEEDED",
+              "monitor": {
+                "success": true,
+                "status": "FAILED",
+                "stdout": "DONE ops\n",
+                "stderr": "",
+                "artifacts": [
+                  {
+                    "path": "<WORK_DIR>/<FLOW_DIR>/realworld-ops/artifacts/operations.py",
+                    "kind": "other",
+                    "size_bytes": 163
+                  }
+                ],
+                "metrics": {
+                  "runtime_seconds": 0.12,
+                  "cost_usd": null,
+                  "tokens_in": null,
+                  "tokens_out": null
+                },
+                "heartbeat_at": "2026-04-22T20:09:55.324462Z",
+                "raw_state": {
+                  "pid": 324989,
+                  "stdout_size": 9
+                }
+              },
+              "evaluation": {
+                "success": true,
+                "score": 1.0,
+                "feedback": "Passed 2/2 checks.",
+                "rubric_breakdown": {
+                  "presence": "pass",
+                  "artifact_compliance": "pass"
+                },
+                "evidence": {
+                  "output_markers": [],
+                  "artifact_paths": [
+                    "<WORK_DIR>/<FLOW_DIR>/realworld-ops/artifacts/operations.py"
+                  ]
+                }
+              },
+              "cost_report": {
+                "success": true,
+                "total_cost_usd": 0.0,
+                "total_tokens_in": 0,
+                "total_tokens_out": 0,
+                "total_runtime_seconds": 0.12,
+                "by_worker": {
+                  "realworld-ops": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                },
+                "by_category": {
+                  "PYTHON_SCRIPT": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "aggregate_cost": {
+        "success": true,
+        "total_cost_usd": 0.0,
+        "total_tokens_in": 0,
+        "total_tokens_out": 0,
+        "total_runtime_seconds": 0.0,
+        "by_worker": {},
+        "by_category": {}
+      }
+    },
+    "stderr": ""
+  },
+  "v2_synthesis": {
+    "exit_code": 0,
+    "stdout": {
+      "files_merged": [
+        "calculator.py",
+        "cli.py",
+        "operations.py"
+      ],
+      "conflicts": [],
+      "notes": [
+        "Merged 3 code projects into <WORK_DIR>/<FLOW_DIR>/<MERGED_DIR>",
+        "No file conflicts detected"
+      ],
+      "output_dir": "<WORK_DIR>/<FLOW_DIR>/<MERGED_DIR>",
+      "type": "code"
+    },
+    "stderr": ""
+  },
+  "v1_tree": {
+    "calculator.py": "#!/usr/bin/env python3\nfrom cli import run\nif __name__ == \"__main__\":\n    run()\n",
+    "cli.py": "#!/usr/bin/env python3\nimport sys\nfrom operations import add, sub, mul, div\n\ndef run():\n    if len(sys.argv) < 4:\n        print(\"Usage: calculator.py <op> <a> <b>\")\n        sys.exit(1)\n    op, a, b = sys.argv[1], float(sys.argv[2]), float(sys.argv[3])\n    if op == \"add\":\n        print(add(a, b))\n    elif op == \"sub\":\n        print(sub(a, b))\n    elif op == \"mul\":\n        print(mul(a, b))\n    elif op == \"div\":\n        print(div(a, b))\n    else:\n        print(\"Unknown op\")\n        sys.exit(1)\n",
+    "operations.py": "#!/usr/bin/env python3\ndef add(a, b): return a + b\ndef sub(a, b): return a - b\ndef mul(a, b): return a * b\ndef div(a, b): return a / b if b != 0 else float(\"inf\")\n"
+  },
+  "v2_tree": {
+    "calculator.py": "#!/usr/bin/env python3\nfrom cli import run\nif __name__ == \"__main__\":\n    run()\n",
+    "cli.py": "#!/usr/bin/env python3\nimport sys\nfrom operations import add, sub, mul, div\n\ndef run():\n    if len(sys.argv) < 4:\n        print(\"Usage: calculator.py <op> <a> <b>\")\n        sys.exit(1)\n    op, a, b = sys.argv[1], float(sys.argv[2]), float(sys.argv[3])\n    if op == \"add\":\n        print(add(a, b))\n    elif op == \"sub\":\n        print(sub(a, b))\n    elif op == \"mul\":\n        print(mul(a, b))\n    elif op == \"div\":\n        print(div(a, b))\n    else:\n        print(\"Unknown op\")\n        sys.exit(1)\n",
+    "operations.py": "#!/usr/bin/env python3\ndef add(a, b): return a + b\ndef sub(a, b): return a - b\ndef mul(a, b): return a * b\ndef div(a, b): return a / b if b != 0 else float(\"inf\")\n"
+  },
+  "v1_smoke": {
+    "add": {
+      "exit_code": 0,
+      "stdout": "5.0",
+      "stderr": "",
+      "expected": "5.0",
+      "pass": true
+    },
+    "sub": {
+      "exit_code": 0,
+      "stdout": "2.0",
+      "stderr": "",
+      "expected": "2.0",
+      "pass": true
+    },
+    "mul": {
+      "exit_code": 0,
+      "stdout": "12.0",
+      "stderr": "",
+      "expected": "12.0",
+      "pass": true
+    },
+    "div": {
+      "exit_code": 0,
+      "stdout": "3.0",
+      "stderr": "",
+      "expected": "3.0",
+      "pass": true
+    }
+  },
+  "v2_smoke": {
+    "add": {
+      "exit_code": 0,
+      "stdout": "5.0",
+      "stderr": "",
+      "expected": "5.0",
+      "pass": true
+    },
+    "sub": {
+      "exit_code": 0,
+      "stdout": "2.0",
+      "stderr": "",
+      "expected": "2.0",
+      "pass": true
+    },
+    "mul": {
+      "exit_code": 0,
+      "stdout": "12.0",
+      "stderr": "",
+      "expected": "12.0",
+      "pass": true
+    },
+    "div": {
+      "exit_code": 0,
+      "stdout": "3.0",
+      "stderr": "",
+      "expected": "3.0",
+      "pass": true
+    }
+  },
+  "parity": {
+    "v2_all_tasks_succeeded": true,
+    "synthesis_result_match": true,
+    "merged_tree_match": true,
+    "smoke_test_match": true,
+    "all_smoke_passed": true
+  },
+  "all_passed": true
+}

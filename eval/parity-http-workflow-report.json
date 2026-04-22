@@ -1,0 +1,269 @@
+{
+  "work_dir": "/tmp/worker-orchestrator-http-parity-9c9jh0xn",
+  "v1_repo": "/home/hackafrik/worker-orchestrator",
+  "v2_repo": "/home/hackafrik/worker-orchestrator-v2",
+  "scenarios": [
+    {
+      "scenario": "http_success",
+      "expected_status": "SUCCEEDED",
+      "v1_helper_flow": {
+        "log_eval": {
+          "exit_code": 0,
+          "stdout": {
+            "provider": "http",
+            "boot_success": true,
+            "boot_details": "opencode v1.14.19 booted; Session created: ses_http_success",
+            "api_limit_hit": false,
+            "api_limit_details": "No API limit indicators found",
+            "completion_detected": true,
+            "completion_markers": [
+              "Wrote to",
+              "Task complete"
+            ],
+            "hang_detected": false,
+            "hang_reason": "Normal exit inferred",
+            "score": 5,
+            "feedback": "Worker booted, executed, and produced completion markers."
+          },
+          "stderr": ""
+        },
+        "output_eval": {
+          "exit_code": 0,
+          "stdout": {
+            "presence": {
+              "passed": true,
+              "reason": "File exists, 1 non-empty lines, 110 bytes"
+            },
+            "correctness": {
+              "score": 4,
+              "reason": "All expected keywords present; No forbidden patterns found"
+            },
+            "completeness": {
+              "score": 3,
+              "reason": "All required sections present; Very short output (10 words)"
+            },
+            "quality": {
+              "score": 3,
+              "reason": "Braces balanced; Line lengths reasonable"
+            },
+            "average": 3.33,
+            "passed": true,
+            "feedback": "Output meets all criteria. Good work."
+          },
+          "stderr": ""
+        },
+        "output_exists": true,
+        "derived_status": "SUCCEEDED",
+        "expected_status": "SUCCEEDED",
+        "passed": true
+      },
+      "v2_orchestrator_flow": {
+        "orchestrator": {
+          "exit_code": 0,
+          "stdout": {
+            "task_id": "http_success-task",
+            "phase": 0,
+            "final_status": "SUCCEEDED",
+            "monitor": {
+              "success": true,
+              "status": "SUCCEEDED",
+              "stdout": "{\"result\": \"ok:hello-http\", \"details\": \"Task complete\", \"usage\": {\"prompt_tokens\": 9, \"completion_tokens\": 4}}",
+              "stderr": "",
+              "artifacts": [],
+              "metrics": {
+                "runtime_seconds": 0.12,
+                "cost_usd": null,
+                "tokens_in": 9,
+                "tokens_out": 4
+              },
+              "heartbeat_at": "2026-04-22T19:43:57.091141Z",
+              "raw_state": {
+                "stream_pid": null
+              }
+            },
+            "evaluation": {
+              "success": true,
+              "score": 1.0,
+              "feedback": "Passed 2/2 checks.",
+              "rubric_breakdown": {
+                "presence": "pass",
+                "format_compliance": "pass"
+              },
+              "evidence": {
+                "output_markers": [
+                  "ok:hello-http"
+                ],
+                "artifact_paths": []
+              }
+            },
+            "cost_report": {
+              "success": true,
+              "total_cost_usd": 0.0,
+              "total_tokens_in": 9,
+              "total_tokens_out": 4,
+              "total_runtime_seconds": 0.12,
+              "by_worker": {
+                "http_success-task": {
+                  "cost_usd": 0.0,
+                  "tokens_in": 9,
+                  "tokens_out": 4,
+                  "runtime_seconds": 0.12,
+                  "records": 1
+                }
+              },
+              "by_category": {
+                "HTTP_API": {
+                  "cost_usd": 0.0,
+                  "tokens_in": 9,
+                  "tokens_out": 4,
+                  "runtime_seconds": 0.12,
+                  "records": 1
+                }
+              }
+            }
+          },
+          "stderr": ""
+        },
+        "response_exists": true,
+        "final_status": "SUCCEEDED",
+        "expected_status": "SUCCEEDED",
+        "passed": true
+      },
+      "parity": {
+        "both_match_expectation": true,
+        "status_match": true,
+        "artifact_match": true
+      },
+      "passed": true
+    },
+    {
+      "scenario": "http_failure",
+      "expected_status": "FAILED",
+      "v1_helper_flow": {
+        "log_eval": {
+          "exit_code": 0,
+          "stdout": {
+            "provider": "http",
+            "boot_success": true,
+            "boot_details": "opencode v1.14.19 booted; Session created: ses_http_error",
+            "api_limit_hit": true,
+            "api_limit_details": "Provider quota exhausted; HTTP 429 rate limit; Rate limit detected; Quota resets in 1300s",
+            "completion_detected": false,
+            "completion_markers": [],
+            "hang_detected": true,
+            "hang_reason": "Booted successfully but blocked by API rate limit; process hung waiting for quota",
+            "score": 1,
+            "feedback": "Provider API limit blocked execution: Provider quota exhausted; HTTP 429 rate limit; Rate limit detected; Quota resets in 1300s Recommendation: respawn on alternate provider, use local model, or wait for quota reset."
+          },
+          "stderr": ""
+        },
+        "output_eval": {
+          "exit_code": 0,
+          "stdout": {
+            "presence": {
+              "passed": true,
+              "reason": "File exists, 1 non-empty lines, 90 bytes"
+            },
+            "correctness": {
+              "score": 2,
+              "reason": "Missing keywords: ok, Task complete; No forbidden patterns found"
+            },
+            "completeness": {
+              "score": 1,
+              "reason": "Missing required sections: result; Very short output (8 words)"
+            },
+            "quality": {
+              "score": 3,
+              "reason": "Braces balanced; Line lengths reasonable"
+            },
+            "average": 2.0,
+            "passed": false,
+            "feedback": "Correctness issue: Missing keywords: ok, Task complete; No forbidden patterns found Completeness issue: Missing required sections: result; Very short output (8 words)"
+          },
+          "stderr": ""
+        },
+        "output_exists": true,
+        "derived_status": "FAILED",
+        "expected_status": "FAILED",
+        "passed": true
+      },
+      "v2_orchestrator_flow": {
+        "orchestrator": {
+          "exit_code": 0,
+          "stdout": {
+            "task_id": "http_failure-task",
+            "phase": 0,
+            "final_status": "FAILED",
+            "monitor": {
+              "success": true,
+              "status": "FAILED",
+              "stdout": "{\"error\": \"usage_limit_reached\", \"details\": \"rate limit detected resets_in_seconds: 1300\"}",
+              "stderr": "",
+              "artifacts": [],
+              "metrics": {
+                "runtime_seconds": 0.13,
+                "cost_usd": null,
+                "tokens_in": null,
+                "tokens_out": null
+              },
+              "heartbeat_at": "2026-04-22T19:43:58.608345Z",
+              "raw_state": {
+                "stream_pid": null
+              }
+            },
+            "evaluation": {
+              "success": true,
+              "score": 0.5,
+              "feedback": "Passed 1/2 checks.",
+              "rubric_breakdown": {
+                "presence": "fail",
+                "format_compliance": "pass"
+              },
+              "evidence": {
+                "output_markers": [],
+                "artifact_paths": []
+              }
+            },
+            "cost_report": {
+              "success": true,
+              "total_cost_usd": 0.0,
+              "total_tokens_in": 0,
+              "total_tokens_out": 0,
+              "total_runtime_seconds": 0.13,
+              "by_worker": {
+                "http_failure-task": {
+                  "cost_usd": 0.0,
+                  "tokens_in": 0,
+                  "tokens_out": 0,
+                  "runtime_seconds": 0.13,
+                  "records": 1
+                }
+              },
+              "by_category": {
+                "HTTP_API": {
+                  "cost_usd": 0.0,
+                  "tokens_in": 0,
+                  "tokens_out": 0,
+                  "runtime_seconds": 0.13,
+                  "records": 1
+                }
+              }
+            }
+          },
+          "stderr": ""
+        },
+        "response_exists": true,
+        "final_status": "FAILED",
+        "expected_status": "FAILED",
+        "passed": true
+      },
+      "parity": {
+        "both_match_expectation": true,
+        "status_match": true,
+        "artifact_match": true
+      },
+      "passed": true
+    }
+  ],
+  "all_passed": true
+}

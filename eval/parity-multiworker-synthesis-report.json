@@ -1,0 +1,300 @@
+{
+  "work_dir": "/tmp/worker-orchestrator-multi-synth-1cnba2wl",
+  "v1_repo": "/home/hackafrik/worker-orchestrator",
+  "v2_repo": "/home/hackafrik/worker-orchestrator-v2",
+  "v1_synthesis": {
+    "exit_code": 0,
+    "stdout": {
+      "files_merged": [
+        "main.py",
+        "main.py.worker_b",
+        "utils.py",
+        "README.md"
+      ],
+      "conflicts": [
+        "./main.py -> renamed to main.py.worker_b"
+      ],
+      "notes": [
+        "Merged 3 code projects into <WORK_DIR>/<FLOW_DIR>/<MERGED_DIR>",
+        "Resolved 1 file conflicts by renaming"
+      ],
+      "output_dir": "<WORK_DIR>/<FLOW_DIR>/<MERGED_DIR>",
+      "type": "code"
+    },
+    "stderr": ""
+  },
+  "v2_manifest": {
+    "exit_code": 0,
+    "stdout": {
+      "phases": [
+        {
+          "phase": 0,
+          "results": [
+            {
+              "task_id": "multi-worker-a",
+              "phase": 0,
+              "final_status": "SUCCEEDED",
+              "monitor": {
+                "success": true,
+                "status": "FAILED",
+                "stdout": "DONE worker a\n",
+                "stderr": "",
+                "artifacts": [
+                  {
+                    "path": "<WORK_DIR>/<FLOW_DIR>/multi-worker-a/artifacts/main.py",
+                    "kind": "other",
+                    "size_bytes": 16
+                  }
+                ],
+                "metrics": {
+                  "runtime_seconds": 0.12,
+                  "cost_usd": null,
+                  "tokens_in": null,
+                  "tokens_out": null
+                },
+                "heartbeat_at": "2026-04-22T19:56:03.080382Z",
+                "raw_state": {
+                  "pid": 311523,
+                  "stdout_size": 14
+                }
+              },
+              "evaluation": {
+                "success": true,
+                "score": 1.0,
+                "feedback": "Passed 2/2 checks.",
+                "rubric_breakdown": {
+                  "presence": "pass",
+                  "artifact_compliance": "pass"
+                },
+                "evidence": {
+                  "output_markers": [],
+                  "artifact_paths": [
+                    "<WORK_DIR>/<FLOW_DIR>/multi-worker-a/artifacts/main.py"
+                  ]
+                }
+              },
+              "cost_report": {
+                "success": true,
+                "total_cost_usd": 0.0,
+                "total_tokens_in": 0,
+                "total_tokens_out": 0,
+                "total_runtime_seconds": 0.12,
+                "by_worker": {
+                  "multi-worker-a": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                },
+                "by_category": {
+                  "PYTHON_SCRIPT": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                }
+              }
+            },
+            {
+              "task_id": "multi-worker-b",
+              "phase": 0,
+              "final_status": "SUCCEEDED",
+              "monitor": {
+                "success": true,
+                "status": "FAILED",
+                "stdout": "DONE worker b\n",
+                "stderr": "",
+                "artifacts": [
+                  {
+                    "path": "<WORK_DIR>/<FLOW_DIR>/multi-worker-b/artifacts/main.py",
+                    "kind": "other",
+                    "size_bytes": 16
+                  },
+                  {
+                    "path": "<WORK_DIR>/<FLOW_DIR>/multi-worker-b/artifacts/utils.py",
+                    "kind": "other",
+                    "size_bytes": 8
+                  }
+                ],
+                "metrics": {
+                  "runtime_seconds": 0.12,
+                  "cost_usd": null,
+                  "tokens_in": null,
+                  "tokens_out": null
+                },
+                "heartbeat_at": "2026-04-22T19:56:03.755009Z",
+                "raw_state": {
+                  "pid": 311540,
+                  "stdout_size": 14
+                }
+              },
+              "evaluation": {
+                "success": true,
+                "score": 1.0,
+                "feedback": "Passed 2/2 checks.",
+                "rubric_breakdown": {
+                  "presence": "pass",
+                  "artifact_compliance": "pass"
+                },
+                "evidence": {
+                  "output_markers": [],
+                  "artifact_paths": [
+                    "<WORK_DIR>/<FLOW_DIR>/multi-worker-b/artifacts/main.py",
+                    "<WORK_DIR>/<FLOW_DIR>/multi-worker-b/artifacts/utils.py"
+                  ]
+                }
+              },
+              "cost_report": {
+                "success": true,
+                "total_cost_usd": 0.0,
+                "total_tokens_in": 0,
+                "total_tokens_out": 0,
+                "total_runtime_seconds": 0.12,
+                "by_worker": {
+                  "multi-worker-b": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                },
+                "by_category": {
+                  "PYTHON_SCRIPT": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                }
+              }
+            },
+            {
+              "task_id": "multi-worker-c",
+              "phase": 0,
+              "final_status": "SUCCEEDED",
+              "monitor": {
+                "success": true,
+                "status": "FAILED",
+                "stdout": "DONE worker c\n",
+                "stderr": "",
+                "artifacts": [
+                  {
+                    "path": "<WORK_DIR>/<FLOW_DIR>/multi-worker-c/artifacts/README.md",
+                    "kind": "report",
+                    "size_bytes": 11
+                  }
+                ],
+                "metrics": {
+                  "runtime_seconds": 0.12,
+                  "cost_usd": null,
+                  "tokens_in": null,
+                  "tokens_out": null
+                },
+                "heartbeat_at": "2026-04-22T19:56:04.429476Z",
+                "raw_state": {
+                  "pid": 311556,
+                  "stdout_size": 14
+                }
+              },
+              "evaluation": {
+                "success": true,
+                "score": 1.0,
+                "feedback": "Passed 2/2 checks.",
+                "rubric_breakdown": {
+                  "presence": "pass",
+                  "artifact_compliance": "pass"
+                },
+                "evidence": {
+                  "output_markers": [],
+                  "artifact_paths": [
+                    "<WORK_DIR>/<FLOW_DIR>/multi-worker-c/artifacts/README.md"
+                  ]
+                }
+              },
+              "cost_report": {
+                "success": true,
+                "total_cost_usd": 0.0,
+                "total_tokens_in": 0,
+                "total_tokens_out": 0,
+                "total_runtime_seconds": 0.12,
+                "by_worker": {
+                  "multi-worker-c": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                },
+                "by_category": {
+                  "PYTHON_SCRIPT": {
+                    "cost_usd": 0.0,
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "runtime_seconds": 0.12,
+                    "records": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "aggregate_cost": {
+        "success": true,
+        "total_cost_usd": 0.0,
+        "total_tokens_in": 0,
+        "total_tokens_out": 0,
+        "total_runtime_seconds": 0.0,
+        "by_worker": {},
+        "by_category": {}
+      }
+    },
+    "stderr": ""
+  },
+  "v2_synthesis": {
+    "exit_code": 0,
+    "stdout": {
+      "files_merged": [
+        "main.py",
+        "main.py.worker_b",
+        "utils.py",
+        "README.md"
+      ],
+      "conflicts": [
+        "./main.py -> renamed to main.py.worker_b"
+      ],
+      "notes": [
+        "Merged 3 code projects into <WORK_DIR>/<FLOW_DIR>/<MERGED_DIR>",
+        "Resolved 1 file conflicts by renaming"
+      ],
+      "output_dir": "<WORK_DIR>/<FLOW_DIR>/<MERGED_DIR>",
+      "type": "code"
+    },
+    "stderr": ""
+  },
+  "v1_tree": {
+    "README.md": "# worker c\n",
+    "main.py": "# from worker a\n",
+    "main.py.worker_b": "# from worker b\n",
+    "utils.py": "# utils\n"
+  },
+  "v2_tree": {
+    "README.md": "# worker c\n",
+    "main.py": "# from worker a\n",
+    "main.py.worker_b": "# from worker b\n",
+    "utils.py": "# utils\n"
+  },
+  "parity": {
+    "v2_all_tasks_succeeded": true,
+    "synthesis_result_match": true,
+    "merged_tree_match": true
+  },
+  "all_passed": true
+}
