@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Worker Orchestrator — Fleet Command for AI Agents</title>
   <meta name="description" content="A Hermes Agent skill that turns your AI agent into a fleet commander. Spawn external OpenCode and Codex CLI workers, evaluate their outputs, rebalance work across provider pools, and dynamically respawn with corrective feedback.">
+  <meta property="og:title" content="Worker Orchestrator — Fleet Command for AI Agents">
+  <meta property="og:description" content="Spawn, monitor, evaluate, and synthesize outputs from heterogeneous worker pools. CLI agents, HTTP APIs, Python scripts, Docker containers.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://worker-orchestration.hackafrik.com/">
+  <meta name="twitter:card" content="summary_large_image">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -176,6 +181,47 @@
       padding: 0.4rem 0.9rem;
       border-radius: 4px;
       background: var(--parchment);
+    }
+
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .nav-toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--espresso);
+      transition: all 0.3s ease;
+    }
+
+    .nav-links.mobile-open {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      top: 64px;
+      left: 0; right: 0;
+      background: var(--parchment);
+      border: 1px solid var(--sand);
+      border-radius: 4px;
+      padding: 1rem;
+      gap: 0;
+      box-shadow: 0 12px 40px rgba(26, 23, 20, 0.08);
+    }
+
+    .nav-links.mobile-open a {
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+    }
+
+    .nav-links.mobile-open a:hover {
+      background: var(--sienna-muted);
     }
 
     /* Hero */
@@ -577,6 +623,7 @@
 
     @media (max-width: 720px) {
       .nav-links { display: none; }
+      .nav-toggle { display: flex; }
       .hero { padding-top: 8rem; }
       .hero h1 { max-width: 100%; }
       .hero-actions { flex-direction: column; }
@@ -599,13 +646,19 @@
   <nav class="nav">
     <div class="container nav-inner">
       <a href="index.html" class="nav-logo">Worker Orchestrator</a>
-      <ul class="nav-links">
+      <ul class="nav-links" id="navLinks">
         <li><a href="#capabilities">Capabilities</a></li>
         <li><a href="#architecture">Architecture</a></li>
         <li><a href="#adapters">Adapters</a></li>
         <li><a href="#quickstart">Quickstart</a></li>
         <li><a href="reference.html">Reference</a></li>
+        <li><a href="eval.html">Evaluation</a></li>
       </ul>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
       <span class="nav-cta">v2.0.0-beta</span>
     </div>
   </nav>
@@ -823,8 +876,19 @@
         if (entry.isIntersecting) entry.target.classList.add('visible');
       });
     }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
     reveals.forEach(el => observer.observe(el));
+
+    // Mobile nav toggle
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (navToggle && navLinks) {
+      navToggle.addEventListener('click', () => {
+        navLinks.classList.toggle('mobile-open');
+      });
+      navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => navLinks.classList.remove('mobile-open'));
+      });
+    }
   </script>
 
 </body>

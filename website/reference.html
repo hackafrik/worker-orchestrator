@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reference — Worker Orchestrator</title>
   <meta name="description" content="Complete reference for the Worker Orchestrator skill. Workflow, spawning patterns, evaluation rubric, safety limits, and pitfalls.">
+  <meta property="og:title" content="Reference — Worker Orchestrator">
+  <meta property="og:description" content="How to decompose tasks, spawn workers, evaluate output, and synthesize deliverables.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://worker-orchestration.hackafrik.com/reference.html">
+  <meta name="twitter:card" content="summary_large_image">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -122,6 +127,42 @@
     }
     .nav-links a:hover { color: var(--espresso); opacity: 1; }
     .nav-links a:hover::after { width: 100%; }
+
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .nav-toggle span {
+      display: block;
+      width: 22px; height: 2px;
+      background: var(--espresso);
+      transition: all 0.3s ease;
+    }
+    .nav-links.mobile-open {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      top: 64px;
+      left: 0; right: 0;
+      background: var(--parchment);
+      border: 1px solid var(--sand);
+      border-radius: 4px;
+      padding: 1rem;
+      gap: 0;
+      box-shadow: 0 12px 40px rgba(26, 23, 20, 0.08);
+    }
+    .nav-links.mobile-open a {
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+    }
+    .nav-links.mobile-open a:hover {
+      background: var(--sienna-muted);
+    }
 
     /* Hero */
     .hero {
@@ -305,6 +346,7 @@
 
     @media (max-width: 720px) {
       .nav-links { display: none; }
+      .nav-toggle { display: flex; }
       .hero { padding-top: 8rem; }
       .toc ul { grid-template-columns: 1fr; }
       .step-item { grid-template-columns: 45px 1fr; gap: 1rem; }
@@ -319,13 +361,16 @@
   <nav class="nav">
     <div class="container nav-inner">
       <a href="index.html" class="nav-logo">Worker Orchestrator</a>
-      <ul class="nav-links">
+      <ul class="nav-links" id="navLinks">
         <li><a href="index.html">Home</a></li>
-        <li><a href="#workflow">Workflow</a></li>
-        <li><a href="#limits">Limits</a></li>
-        <li><a href="#scripts">Scripts</a></li>
-        <li><a href="#pitfalls">Pitfalls</a></li>
+        <li><a href="reference.html">Reference</a></li>
+        <li><a href="eval.html">Evaluation</a></li>
       </ul>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
   </nav>
 
@@ -754,6 +799,18 @@ as a structured markdown report with HIGH/MEDIUM/LOW severity sections.</pre>
       });
     }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
     reveals.forEach(el => observer.observe(el));
+
+    // Mobile nav toggle
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (navToggle && navLinks) {
+      navToggle.addEventListener('click', () => {
+        navLinks.classList.toggle('mobile-open');
+      });
+      navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => navLinks.classList.remove('mobile-open'));
+      });
+    }
   </script>
 
 </body>
