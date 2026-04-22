@@ -1,0 +1,56 @@
+name: worker-orchestrator
+version: 2.0.0
+schema_version: 1
+description: >
+  Manifest-driven AI worker fleet orchestration. Spawn heterogeneous workers
+  (OpenCode, Codex, Docker, HTTP APIs) via phase-based execution, evaluate
+  their output against rubrics, and synthesize the best results.
+category: productivity
+author: hackafrik
+license: MIT
+keywords:
+  - orchestration
+  - ai-agents
+  - worker-pool
+  - parallel-computing
+  - manifest-driven
+  - opencode
+  - codex
+  - evaluation
+  - synthesis
+entrypoints:
+  default: python3 src/orchestrator.py
+  orchestrator: python3 src/orchestrator.py
+  evaluator: python3 src/evaluator.py
+  synthesizer: python3 src/synthesize_outputs.py
+requirements:
+  python_version: ">=3.10"
+  dependencies:
+    - requests>=2.28.0
+    - pyyaml>=6.0
+  optional:
+    - docker>=6.0  # For docker adapter
+install:
+  pre: |
+    # Verify Python version
+    python3 -c "import sys; assert sys.version_info >= (3, 10), 'Python 3.10+ required'"
+    
+    # Install deps
+    pip install -r requirements.txt
+    
+    # Verify adapters can load
+    python3 -c "from src.adapters import ADAPTERS; print(f'Loaded {len(ADAPTERS)} adapters: {list(ADAPTERS.keys())}')"
+manifest:
+  schema: manifest.schema.json
+  default_file: manifest.json
+  examples_dir: examples/
+resources:
+  homepage: https://hackafrik.gitlab.io/worker-orchestration-website/v2/
+  repository: https://github.com/hackafrik/worker-orchestrator
+  documentation: https://hackafrik.gitlab.io/worker-orchestration-website/v2/docs/
+  issues: https://github.com/hackafrik/worker-orchestrator/issues
+  changelog: CHANGELOG.md
+compatibility:
+  platforms: [linux, macos, windows]
+  hermes_agent: ">=1.0"
+  skills_sh: ">=1.0"

@@ -1,0 +1,119 @@
+{
+  "$schema": "../../manifest.schema.json",
+  "version": "2.0.0",
+  "task": {
+    "description": "Research and synthesize a report on emerging vector database technologies. Search for recent benchmarks, compare architectures, and produce an executive summary.",
+    "strategy": "map-reduce"
+  },
+  "phases": [
+    {
+      "id": "search",
+      "type": "parallel",
+      "description": "Three search workers gather information from different angles.",
+      "workers": [
+        {
+          "id": "benchmark-search",
+          "adapter": "http_api",
+          "endpoint": "https://api.perplexity.ai/chat/completions",
+          "method": "POST",
+          "headers": {"Authorization": "Bearer ${PERPLEXITY_API_KEY}"},
+          "body": {
+            "model": "sonar-pro",
+            "messages": [{"role": "user", "content": "Recent vector database benchmarks 2024-2025: pgvector vs milvus vs pinecone vs chroma vs weaviate"}]
+          },
+          "rubric": [
+            {"criterion": "recency", "weight": 0.4, "description": "Sources from 2024-2025"},
+            {"criterion": "coverage", "weight": 0.3, "description": "Covers all five databases"},
+            {"criterion": "metrics", "weight": 0.3, "description": "Includes latency, throughput, recall metrics"}
+          ]
+        },
+        {
+          "id": "architecture-search",
+          "adapter": "http_api",
+          "endpoint": "https://api.perplexity.ai/chat/completions",
+          "method": "POST",
+          "headers": {"Authorization": "Bearer ${PERPLEXITY_API_KEY}"},
+          "body": {
+            "model": "sonar-pro",
+            "messages": [{"role": "user", "content": "Vector database architecture comparison: HNSW vs IVF vs flat index, sharding strategies, distributed consensus"}]
+          },
+          "rubric": [
+            {"criterion": "technical_depth", "weight": 0.5, "description": "Explains indexing algorithms"},
+            {"criterion": "tradeoffs", "weight": 0.3, "description": "Compares latency vs accuracy tradeoffs"},
+            {"criterion": "scalability", "weight": 0.2, "description": "Discusses horizontal scaling"}
+          ]
+        },
+        {
+          "id": "usecase-search",
+          "adapter": "http_api",
+          "endpoint": "https://api.perplexity.ai/chat/completions",
+          "method": "POST",
+          "headers": {"Authorization": "Bearer ${PERPLEXITY_API_KEY}"},
+          "body": {
+            "model": "sonar-pro",
+            "messages": [{"role": "user", "content": "Vector database use cases 2025: RAG pipelines, multimodal search, recommendation engines, fraud detection"}]
+          },
+          "rubric": [
+            {"criterion": "relevance", "weight": 0.5, "description": "Matches 2025 industry trends"},
+            {"criterion": "examples", "weight": 0.3, "description": "Provides concrete company/product examples"},
+            {"criterion": "future", "weight": 0.2, "description": "Predicts emerging applications"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "summarize",
+      "type": "parallel",
+      "description": "Condense each search result into structured notes.",
+      "depends_on": ["search"],
+      "workers": [
+        {
+          "id": "benchmark-summary",
+          "adapter": "cli",
+          "command": "python3 summarize.py benchmark-search-output.json benchmark-summary.json",
+          "input_from": "benchmark-search"
+        },
+        {
+          "id": "architecture-summary",
+          "adapter": "cli",
+          "command": "python3 summarize.py architecture-search-output.json architecture-summary.json",
+          "input_from": "architecture-search"
+        },
+        {
+          "id": "usecase-summary",
+          "adapter": "cli",
+          "command": "python3 summarize.py usecase-search-output.json usecase-summary.json",
+          "input_from": "usecase-search"
+        }
+      ]
+    },
+    {
+      "id": "synthesize",
+      "type": "sequential",
+      "description": "Merge all summaries into an executive report with visualizations.",
+      "depends_on": ["summarize"],
+      "workers": [
+        {
+          "id": "report-writer",
+          "adapter": "cli",
+          "command": "python3 generate_report.py benchmark-summary.json architecture-summary.json usecase-summary.json report.md",
+          "rubric": [
+            {"criterion": "completeness", "weight": 0.4, "description": "Covers all three research angles"},
+            {"criterion": "clarity", "weight": 0.3, "description": "Executive-level readability"},
+            {"criterion": "actionable", "weight": 0.3, "description": "Includes recommendations"}
+          ]
+        }
+      ]
+    }
+  ],
+  "synthesis": {
+    "mode": "concatenate",
+    "merge_field": "report",
+    "output_file": "vector_databases_2025.md"
+  },
+  "budget": {
+    "max_workers": 3,
+    "cost_ceiling_usd": 0.50,
+    "time_limit_seconds": 300
+  }
+}

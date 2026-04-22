@@ -1,0 +1,70 @@
+{
+  "$schema": "../../manifest.schema.json",
+  "version": "2.0.0",
+  "task": {
+    "description": "Generate a greeting message in three different tones: formal, casual, and poetic. Synthesize the best elements into a single output.",
+    "strategy": "parallel-voting"
+  },
+  "phases": [
+    {
+      "id": "generate",
+      "type": "parallel",
+      "description": "Spawn three workers, each producing a greeting in a different tone.",
+      "workers": [
+        {
+          "id": "formal",
+          "adapter": "cli",
+          "command": "python3 -c \"print('Greetings and salutations. It is a pleasure to make your acquaintance.')\"",
+          "rubric": [
+            {"criterion": "tone", "weight": 0.5, "description": "Must be formal and professional"},
+            {"criterion": "completeness", "weight": 0.5, "description": "Must include a greeting and introduction"}
+          ]
+        },
+        {
+          "id": "casual",
+          "adapter": "cli",
+          "command": "python3 -c \"print('Hey there! Nice to meet you. Hope you are having an awesome day!')\"",
+          "rubric": [
+            {"criterion": "tone", "weight": 0.5, "description": "Must be casual and friendly"},
+            {"criterion": "enthusiasm", "weight": 0.5, "description": "Should convey warmth"}
+          ]
+        },
+        {
+          "id": "poetic",
+          "adapter": "cli",
+          "command": "python3 -c \"print('Like dawn breaking over silent hills, I greet you—stranger soon to be friend.')\"",
+          "rubric": [
+            {"criterion": "imagery", "weight": 0.6, "description": "Must use metaphor or vivid imagery"},
+            {"criterion": "tone", "weight": 0.4, "description": "Must be lyrical and evocative"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "synthesize",
+      "type": "sequential",
+      "description": "Merge the three greetings into a single message that blends all tones.",
+      "depends_on": ["generate"],
+      "workers": [
+        {
+          "id": "merge",
+          "adapter": "cli",
+          "command": "python3 -c \"print('Hello—whether you prefer formality, casual chat, or poetry, welcome aboard!')\"",
+          "rubric": [
+            {"criterion": "coverage", "weight": 1.0, "description": "Must acknowledge all three source tones"}
+          ]
+        }
+      ]
+    }
+  ],
+  "synthesis": {
+    "mode": "best-of-n",
+    "merge_field": "output",
+    "output_file": "greeting.txt"
+  },
+  "budget": {
+    "max_workers": 3,
+    "cost_ceiling_usd": 0.01,
+    "time_limit_seconds": 60
+  }
+}

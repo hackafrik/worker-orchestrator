@@ -1,0 +1,85 @@
+{
+  "$schema": "../../manifest.schema.json",
+  "version": "2.0.0",
+  "task": {
+    "description": "Perform a multi-faceted code review on a Python module. Check for bugs, style issues, performance problems, and security vulnerabilities. Synthesize findings into a structured report.",
+    "strategy": "expert-ensemble"
+  },
+  "phases": [
+    {
+      "id": "review",
+      "type": "parallel",
+      "description": "Four specialist reviewers analyze the code simultaneously.",
+      "workers": [
+        {
+          "id": "bug-hunter",
+          "adapter": "python_script",
+          "script_file": "bug_review.py",
+          "rubric": [
+            {"criterion": "bug_count", "weight": 0.4, "description": "Number of actual bugs found"},
+            {"criterion": "severity", "weight": 0.4, "description": "Correct severity assessment"},
+            {"criterion": "reproducibility", "weight": 0.2, "description": "Provides reproduction steps"}
+          ]
+        },
+        {
+          "id": "style-guru",
+          "adapter": "python_script",
+          "script_file": "style_review.py",
+          "rubric": [
+            {"criterion": "pep8_compliance", "weight": 0.5, "description": "Adherence to PEP 8"},
+            {"criterion": "naming", "weight": 0.3, "description": "Variable/function naming quality"},
+            {"criterion": "docstrings", "weight": 0.2, "description": "Documentation coverage"}
+          ]
+        },
+        {
+          "id": "perf-analyst",
+          "adapter": "python_script",
+          "script_file": "perf_review.py",
+          "rubric": [
+            {"criterion": "complexity", "weight": 0.4, "description": "Identifies Big-O issues"},
+            {"criterion": "allocations", "weight": 0.3, "description": "Spots unnecessary allocations"},
+            {"criterion": "caching", "weight": 0.3, "description": "Identifies cache opportunities"}
+          ]
+        },
+        {
+          "id": "security-auditor",
+          "adapter": "python_script",
+          "script_file": "security_review.py",
+          "rubric": [
+            {"criterion": "injection", "weight": 0.4, "description": "Input validation gaps"},
+            {"criterion": "secrets", "weight": 0.3, "description": "Hardcoded secrets detection"},
+            {"criterion": "permissions", "weight": 0.3, "description": "Permission/ACL issues"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "synthesize",
+      "type": "sequential",
+      "description": "Merge all four review reports into a single prioritized action list.",
+      "depends_on": ["review"],
+      "workers": [
+        {
+          "id": "report-compiler",
+          "adapter": "python_script",
+          "script_file": "synthesize_report.py",
+          "rubric": [
+            {"criterion": "coverage", "weight": 0.5, "description": "Includes all findings from all reviewers"},
+            {"criterion": "priority", "weight": 0.3, "description": "Correct severity ordering"},
+            {"criterion": "actionable", "weight": 0.2, "description": "Each item has clear fix steps"}
+          ]
+        }
+      ]
+    }
+  ],
+  "synthesis": {
+    "mode": "merge",
+    "merge_field": "findings",
+    "output_file": "code_review_report.json"
+  },
+  "budget": {
+    "max_workers": 4,
+    "cost_ceiling_usd": 0.05,
+    "time_limit_seconds": 120
+  }
+}

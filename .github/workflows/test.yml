@@ -1,0 +1,78 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint with ruff
+        run: |
+          pip install ruff
+          ruff check src/ eval/ || true
+
+      - name: Format check with black
+        run: |
+          pip install black
+          black --check src/ eval/ || true
+
+      - name: Structural parity test
+        run: |
+          cd eval
+          python3 structural_parity_test.py
+
+      - name: Real-world parity test
+        run: |
+          cd eval
+          python3 parity_realworld_v1_v2.py
+
+      - name: Validate manifest schema
+        run: |
+          python3 -c "
+import json
+with open('manifest.schema.json') as f:
+    schema = json.load(f)
+print(f'Schema loaded: {len(schema)} top-level keys')
+for ex in ['01-hello-world', '02-code-review', '03-research-report']:
+    path = f'examples/{ex}/manifest.json'
+    with open(path) as f:
+        m = json.load(f)
+    assert m['version'] == '2.0.0', f'{ex}: version mismatch'
+    assert 'phases' in m, f'{ex}: missing phases'
+    assert 'synthesis' in m, f'{ex}: missing synthesis'
+    print(f'  {ex}: OK')
+print('All manifests valid.')
+"
+
+      - name: Validate skill.yaml
+        run: |
+          pip install pyyaml
+          python3 -c "
+import yaml
+with open('skill.yaml') as f:
+    skill = yaml.safe_load(f)
+assert skill['name'] == 'worker-orchestrator'
+assert skill['version'] == '2.0.0'
+assert 'entrypoints' in skill
+print('skill.yaml valid.')
+"
