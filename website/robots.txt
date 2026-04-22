@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://worker-orchestration.hackafrik.com/sitemap.xml
