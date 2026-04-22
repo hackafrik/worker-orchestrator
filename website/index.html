@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Worker Orchestrator — Fleet Command for AI Agents</title>
+  <meta name="description" content="A Hermes Agent skill that turns your AI agent into a fleet commander. Spawn external OpenCode and Codex CLI workers, evaluate their outputs, rebalance work across provider pools, and dynamically respawn with corrective feedback.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --plaster: #f2efe8;
+      --parchment: #faf8f3;
+      --espresso: #1a1714;
+      --taupe: #7a7269;
+      --sand: #e6dfd4;
+      --stone: #d4cdc2;
+      --sienna: #c4551a;
+      --sienna-dark: #9c4212;
+      --sienna-muted: rgba(196, 85, 26, 0.08);
+
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Schibsted Grotesk', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SFMono-Regular', monospace;
+
+      --container: 1180px;
+      --gutter: clamp(1.5rem, 4vw, 3rem);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--plaster);
+      color: var(--espresso);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 9999;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    ::selection {
+      background: var(--sienna-muted);
+      color: var(--espresso);
+    }
+
+    /* Typography */
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      font-weight: 700;
+    }
+
+    h1 { font-size: clamp(3.2rem, 7.5vw, 6.5rem); }
+    h2 { font-size: clamp(1.8rem, 3.5vw, 3rem); }
+    h3 { font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: 600; }
+    h4 { font-size: 1.1rem; font-weight: 600; }
+
+    p { max-width: 65ch; }
+
+    a {
+      color: var(--sienna);
+      text-decoration: none;
+      transition: opacity 0.2s ease;
+    }
+    a:hover { opacity: 0.75; }
+
+    code, pre {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+    }
+
+    code {
+      background: var(--sand);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      color: var(--sienna-dark);
+    }
+
+    /* Layout */
+    .container {
+      width: min(calc(100% - var(--gutter) * 2), var(--container));
+      margin: 0 auto;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.5rem 0;
+      mix-blend-mode: multiply;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--espresso);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .nav-logo::before {
+      content: '■';
+      color: var(--sienna);
+      font-size: 0.9rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--taupe);
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--sienna);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--espresso);
+      opacity: 1;
+    }
+
+    .nav-links a:hover::after { width: 100%; }
+
+    .nav-cta {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--sienna);
+      border: 1px solid var(--sand);
+      padding: 0.4rem 0.9rem;
+      border-radius: 4px;
+      background: var(--parchment);
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 10rem 0 6rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, var(--stone) 1px, transparent 1px) 0 0 / 120px 100%,
+        linear-gradient(0deg, var(--stone) 1px, transparent 1px) 0 0 / 100% 120px;
+      opacity: 0.15;
+      mask-image: radial-gradient(ellipse at 30% 20%, black 0%, transparent 60%);
+      -webkit-mask-image: radial-gradient(ellipse at 30% 20%, black 0%, transparent 60%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--sienna);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 32px; height: 1px;
+      background: var(--sienna);
+    }
+
+    .hero h1 {
+      max-width: 14ch;
+      margin-bottom: 2rem;
+      font-weight: 800;
+    }
+
+    .hero h1 .line {
+      display: block;
+    }
+
+    .hero h1 .accent {
+      color: var(--sienna);
+    }
+
+    .hero-lede {
+      font-size: 1.15rem;
+      color: var(--taupe);
+      max-width: 55ch;
+      margin-bottom: 3rem;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.6rem;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 4px;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--espresso);
+      color: var(--plaster);
+    }
+
+    .btn-primary:hover {
+      background: var(--sienna);
+      color: white;
+      opacity: 1;
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--espresso);
+      border: 1px solid var(--stone);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--sienna);
+      color: var(--sienna);
+      opacity: 1;
+      transform: translateY(-1px);
+    }
+
+    .hero-meta {
+      margin-top: 4rem;
+      display: flex;
+      gap: 2.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--taupe);
+    }
+
+    .hero-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .hero-meta .status {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #4a7c59;
+    }
+
+    /* Section label */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--sienna);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-label::before {
+      content: '';
+      display: inline-block;
+      width: 24px; height: 1px;
+      background: var(--sienna);
+    }
+
+    /* Sections */
+    section {
+      padding: 8rem 0;
+      position: relative;
+    }
+
+    .section-header {
+      margin-bottom: 4rem;
+    }
+
+    .section-header h2 {
+      margin-bottom: 1rem;
+    }
+
+    .section-header p {
+      color: var(--taupe);
+      font-size: 1.1rem;
+      max-width: 55ch;
+    }
+
+    /* Capability taxonomy (Bedow-style) */
+    .capability-list {
+      list-style: none;
+      border-top: 1px solid var(--sand);
+    }
+
+    .capability-item {
+      display: grid;
+      grid-template-columns: 60px 1fr 1.5fr;
+      gap: 2rem;
+      align-items: baseline;
+      padding: 2rem 0;
+      border-bottom: 1px solid var(--sand);
+      transition: background 0.3s ease;
+      cursor: default;
+    }
+
+    .capability-item:hover {
+      background: linear-gradient(90deg, transparent, var(--sienna-muted), transparent);
+    }
+
+    .capability-num {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--taupe);
+    }
+
+    .capability-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .capability-desc {
+      font-size: 0.95rem;
+      color: var(--taupe);
+      line-height: 1.6;
+    }
+
+    /* Architecture */
+    .arch-block {
+      background: var(--parchment);
+      border: 1px solid var(--sand);
+      border-radius: 4px;
+      padding: 2.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      line-height: 1.75;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .arch-block::before {
+      content: 'SYSTEM';
+      position: absolute;
+      top: 1rem; right: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--taupe);
+    }
+
+    .arch-block .node { color: var(--sienna); font-weight: 600; }
+    .arch-block .edge { color: var(--taupe); }
+    .arch-block .label { color: #4a7c59; }
+
+    /* Adapter blocks */
+    .adapter-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .adapter-block {
+      background: var(--parchment);
+      border: 1px solid var(--sand);
+      border-radius: 4px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .adapter-block:hover {
+      border-color: var(--stone);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(26, 23, 20, 0.06);
+    }
+
+    .adapter-block .icon {
+      width: 40px; height: 40px;
+      border: 1px solid var(--sand);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      font-size: 1.1rem;
+    }
+
+    .adapter-block h4 {
+      font-family: var(--font-display);
+      margin-bottom: 0.5rem;
+    }
+
+    .adapter-block p {
+      font-size: 0.88rem;
+      color: var(--taupe);
+      line-height: 1.55;
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--parchment);
+      border: 1px solid var(--sand);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .code-block::before {
+      content: 'manifest.json';
+      position: absolute;
+      top: 1rem; right: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+      color: var(--taupe);
+    }
+
+    .code-block pre {
+      padding: 2.5rem;
+      font-size: 0.82rem;
+      line-height: 1.85;
+      overflow-x: auto;
+      color: var(--taupe);
+    }
+
+    .code-block .key { color: var(--sienna); font-weight: 600; }
+    .code-block .str { color: #4a7c59; }
+    .code-block .num { color: #0369a1; }
+    .code-block .comment { color: var(--taupe); font-style: italic; }
+
+    /* CTA */
+    .cta {
+      text-align: center;
+      padding: 10rem 0;
+      background: linear-gradient(180deg, var(--plaster) 0%, var(--sand) 100%);
+    }
+
+    .cta h2 {
+      margin-bottom: 1rem;
+    }
+
+    .cta p {
+      color: var(--taupe);
+      margin: 0 auto 2rem;
+      font-size: 1.1rem;
+    }
+
+    /* Footer */
+    footer {
+      padding: 3rem 0 4rem;
+      border-top: 1px solid var(--sand);
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-copy {
+      font-size: 0.85rem;
+      color: var(--taupe);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 0.85rem;
+      color: var(--taupe);
+    }
+
+    .footer-links a:hover { color: var(--sienna); opacity: 1; }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Stagger */
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* Responsive */
+    @media (max-width: 980px) {
+      .capability-item {
+        grid-template-columns: 50px 1fr;
+        gap: 0.5rem 1.5rem;
+      }
+      .capability-desc {
+        grid-column: 2;
+      }
+      .adapter-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav-links { display: none; }
+      .hero { padding-top: 8rem; }
+      .hero h1 { max-width: 100%; }
+      .hero-actions { flex-direction: column; }
+      .hero-actions .btn { width: 100%; justify-content: center; }
+      .hero-meta { flex-direction: column; gap: 0.75rem; }
+      section { padding: 5rem 0; }
+      .capability-item {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+      .capability-num { margin-bottom: 0.25rem; }
+      .capability-desc { grid-column: 1; }
+      .adapter-grid { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="index.html" class="nav-logo">Worker Orchestrator</a>
+      <ul class="nav-links">
+        <li><a href="#capabilities">Capabilities</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#adapters">Adapters</a></li>
+        <li><a href="#quickstart">Quickstart</a></li>
+      </ul>
+      <span class="nav-cta">v2.0.0-beta</span>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-grid"></div>
+    <div class="container hero-content">
+      <p class="hero-eyebrow">Hermes Agent Skill</p>
+      <h1>
+        <span class="line">Fleet Command</span>
+        <span class="line">for <span class="accent">AI Agents</span></span>
+      </h1>
+      <p class="hero-lede">
+        A Hermes Agent skill that turns your AI agent into a fleet commander.
+        Spawn external OpenCode and Codex CLI workers, evaluate their outputs,
+        rebalance work across provider pools, and dynamically respawn with corrective feedback.
+      </p>
+      <div class="hero-actions">
+        <a href="#quickstart" class="btn btn-primary">Get Started</a>
+        <a href="https://gitlab.com/hackafrik/worker-orchestrator" class="btn btn-ghost" target="_blank">View on GitLab</a>
+      </div>
+      <div class="hero-meta">
+        <span><span class="status"></span> MIT License</span>
+        <span>Python 3.10+</span>
+        <span>6 worker limit</span>
+      </div>
+    </div>
+  </header>
+
+  <section id="capabilities">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">What It Does</p>
+        <h2>Capabilities</h2>
+        <p>Decompose complex tasks, distribute across heterogeneous workers, and synthesize unified deliverables.</p>
+      </div>
+
+      <ol class="capability-list">
+        <li class="capability-item reveal">
+          <span class="capability-num">01</span>
+          <span class="capability-title">Decompose</span>
+          <p class="capability-desc">Break your task into 2-5 independent subtasks. Each worker gets a self-contained prompt with all context it needs.</p>
+        </li>
+        <li class="capability-item reveal reveal-delay-1">
+          <span class="capability-num">02</span>
+          <span class="capability-title">Spawn</span>
+          <p class="capability-desc">Launch OpenCode and Codex workers as actual OS processes with isolated workdirs. No subagents — real CLI processes.</p>
+        </li>
+        <li class="capability-item reveal reveal-delay-2">
+          <span class="capability-num">03</span>
+          <span class="capability-title">Monitor</span>
+          <p class="capability-desc">Batch-style monitoring via subprocess output capture. Inspect logs before trusting files alone.</p>
+        </li>
+        <li class="capability-item reveal reveal-delay-3">
+          <span class="capability-num">04</span>
+          <span class="capability-title">Evaluate</span>
+          <p class="capability-desc">Score every worker against a rubric: Presence, Correctness, Completeness, Quality. Pass threshold: average >= 3.0.</p>
+        </li>
+        <li class="capability-item reveal">
+          <span class="capability-num">05</span>
+          <span class="capability-title">Respawn</span>
+          <p class="capability-desc">Failed workers get specific corrective feedback and are respawned. Max 2 respawns per subtask. Circuit breaker detects rate limits.</p>
+        </li>
+        <li class="capability-item reveal reveal-delay-1">
+          <span class="capability-num">06</span>
+          <span class="capability-title">Rebalance</span>
+          <p class="capability-desc">Shift work between OpenCode and Codex pools based on capacity, reliability, and task fit. Not a one-way fallback chain.</p>
+        </li>
+        <li class="capability-item reveal reveal-delay-2">
+          <span class="capability-num">07</span>
+          <span class="capability-title">Dynamic Spawn</span>
+          <p class="capability-desc">After the first batch, spawn additional workers if gaps remain or user feedback arrives mid-orchestration.</p>
+        </li>
+        <li class="capability-item reveal reveal-delay-3">
+          <span class="capability-num">08</span>
+          <span class="capability-title">Synthesize</span>
+          <p class="capability-desc">Merge all worker outputs into a single coherent deliverable, resolve conflicts, and credit which worker produced what.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="architecture">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">System Design</p>
+        <h2>Architecture</h2>
+        <p>Hermes acts as conductor. Workers are the orchestra. The manifest is the score.</p>
+      </div>
+
+      <div class="arch-block reveal">
+<pre><span class="node">Hermes (Orchestrator)</span>
+    <span class="edge">│</span>
+    <span class="edge">├──</span> <span class="label">Discover</span> <span class="edge">→</span> <span class="node">.worker-registry.json</span>
+    <span class="edge">├──</span> <span class="label">Decompose</span> <span class="edge">→</span> <span class="node">manifest.json</span>
+    <span class="edge">├──</span> <span class="label">Spawn</span> <span class="edge">→</span> <span class="node">adapter_cli | adapter_http | adapter_python | adapter_docker</span>
+    <span class="edge">├──</span> <span class="label">Monitor</span> <span class="edge">→</span> <span class="node">unified monitor_result schema</span>
+    <span class="edge">├──</span> <span class="label">Evaluate</span> <span class="edge">→</span> <span class="node">rubric-based scoring</span>
+    <span class="edge">├──</span> <span class="label">Rebalance</span> <span class="edge">→</span> <span class="node">respawn / phase-gate</span>
+    <span class="edge">├──</span> <span class="label">Track</span> <span class="edge">→</span> <span class="node">cost + tokens ledger</span>
+    <span class="edge">└──</span> <span class="label">Synthesize</span> <span class="edge">→</span> <span class="node">unified deliverable</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="adapters">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">Worker Types</p>
+        <h2>Adapter Ecosystem</h2>
+        <p>Four categories. Infinite combinations. Plug in what you have.</p>
+      </div>
+
+      <div class="adapter-grid">
+        <div class="adapter-block reveal">
+          <div class="icon">⌘</div>
+          <h4>CLI Agents</h4>
+          <p>OpenCode, Codex, Claude Code, Aider, Goose</p>
+        </div>
+        <div class="adapter-block reveal reveal-delay-1">
+          <div class="icon">◎</div>
+          <h4>HTTP APIs</h4>
+          <p>ollama, vLLM, OpenAI, Anthropic, Groq, Gemini</p>
+        </div>
+        <div class="adapter-block reveal reveal-delay-2">
+          <div class="icon">{}</div>
+          <h4>Python Scripts</h4>
+          <p>Custom inference, data pipelines, bespoke workers</p>
+        </div>
+        <div class="adapter-block reveal reveal-delay-3">
+          <div class="icon">◫</div>
+          <h4>Docker</h4>
+          <p>GPU inference containers, sandboxed agents</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="quickstart">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">Get Started</p>
+        <h2>Quickstart</h2>
+        <p>Pure stdlib bootstrap. No dependencies required for core orchestration.</p>
+      </div>
+
+      <div class="code-block reveal">
+        <pre><span class="comment"># 1. Clone the skill</span>
+<span class="key">git</span> clone https://gitlab.com/hackafrik/worker-orchestrator.git
+<span class="key">cd</span> worker-orchestrator
+
+<span class="comment"># 2. Discover available workers</span>
+<span class="key">python3</span> scripts/discover_workers.py
+
+<span class="comment"># 3. Write a manifest</span>
+<span class="key">cat</span> > manifest.json <span class="str">&lt;&lt; 'EOF'</span>
+{
+  <span class="key">"phases"</span>: [
+    {
+      <span class="key">"phase_number"</span>: <span class="num">0</span>,
+      <span class="key">"tasks"</span>: [
+        {
+          <span class="key">"task_id"</span>: <span class="str">"demo-worker-1"</span>,
+          <span class="key">"worker_category"</span>: <span class="str">"PYTHON_SCRIPT"</span>,
+          <span class="key">"adapter_name"</span>: <span class="str">"python3"</span>,
+          <span class="key">"prompt"</span>: <span class="str">"Write a CSV reader"</span>,
+          <span class="key">"workdir"</span>: <span class="str">"/tmp/demo"</span>,
+          <span class="key">"timeout_seconds"</span>: <span class="num">300</span>,
+          <span class="key">"rubric"</span>: {
+            <span class="key">"expected_files"</span>: [<span class="str">"csv_reader.py"</span>]
+          },
+          <span class="key">"runtime"</span>: {
+            <span class="key">"script_path"</span>: <span class="str">"scripts/demo.py"</span>,
+            <span class="key">"interpreter"</span>: <span class="str">"python3"</span>
+          }
+        }
+      ]
+    }
+  ]
+}
+<span class="str">EOF</span>
+
+<span class="comment"># 4. Run the orchestrator</span>
+<span class="key">python3</span> scripts/run_orchestrator.py manifest.json</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container reveal">
+      <p class="section-label" style="justify-content: center;">Ready?</p>
+      <h2>Deploy Your Fleet</h2>
+      <p>v2.0.0 is in beta. Install now and start orchestrating.</p>
+      <div class="hero-actions" style="justify-content: center; margin-top: 2rem;">
+        <a href="https://gitlab.com/hackafrik/worker-orchestrator" class="btn btn-primary" target="_blank">Install v2.0.0-beta</a>
+        <a href="https://github.com/hackafrik/worker-orchestrator" class="btn btn-ghost" target="_blank">v1.4 (stable)</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container footer-inner">
+      <span class="footer-copy">MIT License &middot; hackafrik</span>
+      <ul class="footer-links">
+        <li><a href="https://gitlab.com/hackafrik/worker-orchestrator" target="_blank">GitLab</a></li>
+        <li><a href="https://github.com/hackafrik/worker-orchestrator" target="_blank">GitHub</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    reveals.forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
