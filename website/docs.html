@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Documentation — Universal Worker Orchestrator</title>
+<meta name="description" content="Full skill specification, adapter interfaces, and capability matrix for the Universal Worker Orchestrator.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F2EFE8;
+  --surface: #FAF8F3;
+  --text: #1A1A1A;
+  --text-secondary: #6B6560;
+  --accent: #B85C39;
+  --technical: #3D5A6C;
+  --border: #E5E0D8;
+  --border-light: #EEEBE4;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'Schibsted Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+.container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+@media (max-width: 640px) { .container { padding: 0 1.25rem; } }
+
+/* Nav */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(242, 239, 232, 0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-light);
+}
+.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 4rem; }
+.logo { font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
+.logo span { color: var(--accent); }
+.nav-links { display: flex; gap: 2.5rem; list-style: none; }
+.nav-links a { font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); text-decoration: none; letter-spacing: 0.01em; transition: color 0.2s; position: relative; }
+.nav-links a:hover { color: var(--text); }
+.nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--accent); transition: width 0.3s; }
+.nav-links a:hover::after { width: 100%; }
+.menu-toggle { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; }
+.menu-toggle span { display: block; width: 24px; height: 2px; background: var(--text); margin: 5px 0; }
+@media (max-width: 768px) {
+  .nav-links { position: fixed; top: 4rem; right: 0; width: 100%; background: var(--bg); flex-direction: column; padding: 2rem; gap: 1.5rem; border-bottom: 1px solid var(--border); transform: translateY(-150%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
+  .nav-links.open { transform: translateY(0); }
+  .menu-toggle { display: block; }
+}
+
+/* Layout */
+.docs-layout { display: grid; grid-template-columns: 260px 1fr; gap: 4rem; padding-top: 7rem; padding-bottom: 5rem; }
+@media (max-width: 900px) { .docs-layout { grid-template-columns: 1fr; gap: 2rem; } }
+
+/* Sidebar */
+.sidebar { position: sticky; top: 6rem; align-self: start; }
+@media (max-width: 900px) { .sidebar { position: relative; top: 0; } }
+.sidebar-title {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+}
+.sidebar-nav { list-style: none; }
+.sidebar-nav li { margin-bottom: 0.25rem; }
+.sidebar-nav a {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.375rem 0;
+  border-left: 2px solid transparent;
+  padding-left: 0.875rem;
+  margin-left: -0.875rem;
+  transition: all 0.2s;
+}
+.sidebar-nav a:hover, .sidebar-nav a.active { color: var(--accent); border-left-color: var(--accent); }
+.sidebar-nav .sub a { font-size: 0.8125rem; padding-left: 1.5rem; font-weight: 400; }
+
+/* Content */
+.content { min-width: 0; }
+.content h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.content h2 {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
+}
+.content h3 {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+.content p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+  max-width: 680px;
+}
+.content p strong { color: var(--text); }
+.content ul, .content ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+  color: var(--text-secondary);
+}
+.content li { margin-bottom: 0.5rem; }
+.content li::marker { color: var(--accent); }
+.content a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+.content a:hover { border-bottom-color: var(--accent); }
+
+/* Tables */
+.content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9375rem;
+  overflow-x: auto;
+  display: block;
+}
+.content thead { display: table; width: 100%; }
+.content tbody { display: table; width: 100%; }
+.content th, .content td {
+  text-align: left;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.content th {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  background: var(--surface);
+}
+.content td { color: var(--text); }
+.content td code { font-size: 0.8125rem; }
+
+/* Code */
+.content pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+.content code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--surface);
+  padding: 0.125rem 0.375rem;
+  border-radius: 2px;
+  border: 1px solid var(--border-light);
+  color: var(--technical);
+}
+.content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.875rem;
+}
+
+/* Blockquote */
+.content blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1.25rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* Section divider */
+.section-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 3rem 0;
+  border: none;
+}
+
+/* Footer */
+footer { border-top: 1px solid var(--border); padding: 3rem 0; }
+.footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.footer-left { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 0.05em; }
+.footer-right { display: flex; gap: 2rem; }
+.footer-right a { font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
+.footer-right a:hover { color: var(--accent); }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="/" class="logo">Worker<span>.</span>Orchestrator</a>
+    <button class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="/docs.html">Documentation</a></li>
+      <li><a href="/eval.html">Evaluation</a></li>
+      <li><a href="https://gitlab.com/hackafrik/universal-worker-orchestrator" target="_blank" rel="noopener">GitLab</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container docs-layout">
+  <aside class="sidebar">
+    <div class="sidebar-title">On this page</div>
+    <ul class="sidebar-nav">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li class="sub"><a href="#adapter-interface">Adapter Interface</a></li>
+      <li class="sub"><a href="#state-machine">State Machine</a></li>
+      <li><a href="#pool-limits">Pool Limits</a></li>
+      <li><a href="#workflow">Workflow</a></li>
+      <li class="sub"><a href="#discover">Discover & Plan</a></li>
+      <li class="sub"><a href="#task-spec">Task Spec</a></li>
+      <li class="sub"><a href="#spawn">Spawn & Monitor</a></li>
+      <li class="sub"><a href="#evaluate">Evaluate</a></li>
+      <li class="sub"><a href="#respawn">Feedback & Respawn</a></li>
+      <li class="sub"><a href="#synthesize">Synthesize</a></li>
+      <li><a href="#adapters">Adapter Reference</a></li>
+      <li class="sub"><a href="#cli-adapter">CLI Adapter</a></li>
+      <li class="sub"><a href="#http-adapter">HTTP Adapter</a></li>
+      <li class="sub"><a href="#python-adapter">Python Adapter</a></li>
+      <li class="sub"><a href="#docker-adapter">Docker Adapter</a></li>
+      <li class="sub"><a href="#new-adapter">Adding Adapters</a></li>
+      <li><a href="#capabilities">Capability Matrix</a></li>
+      <li class="sub"><a href="#cli-workers">CLI Workers</a></li>
+      <li class="sub"><a href="#http-endpoints">HTTP Endpoints</a></li>
+      <li class="sub"><a href="#cost-rates">Cost Rates</a></li>
+      <li><a href="#safety">Safety & Limits</a></li>
+      <li><a href="#pitfalls">Pitfalls</a></li>
+    </ul>
+  </aside>
+
+  <main class="content">
+    <h1 id="overview">Universal Worker Orchestrator</h1>
+    <p>A <a href="https://github.com/NousResearch/hermes-agent" target="_blank" rel="noopener">Hermes Agent</a> skill that turns your AI agent into a fleet commander across heterogeneous worker pools. Spawn CLI agents, HTTP API endpoints, Python scripts, and Docker containers — then monitor, evaluate, rebalance, and synthesize their outputs.</p>
+
+    <h2 id="architecture">Architecture</h2>
+    <p>Hermes acts as the orchestrator that spawns, monitors, evaluates, and synthesizes output from external AI workers across four categories:</p>
+    <table>
+      <thead>
+        <tr><th>Category</th><th>Examples</th><th>Best For</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>CLI</strong></td><td>OpenCode, Codex, Claude Code, Aider, Goose</td><td>Full-agent coding tasks</td></tr>
+        <tr><td><strong>HTTP_API</strong></td><td>ollama, vLLM, OpenAI, Anthropic, Groq</td><td>Remote/local inference endpoints</td></tr>
+        <tr><td><strong>PYTHON_SCRIPT</strong></td><td>Custom inference scripts, data pipelines</td><td>Bespoke Python workers</td></tr>
+        <tr><td><strong>DOCKER</strong></td><td>GPU inference containers, sandboxed agents</td><td>Isolated, reproducible runs</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="adapter-interface">Worker Adapter Interface</h3>
+    <p>Every adapter exposes four operations: <strong>spawn</strong>, <strong>monitor</strong>, <strong>kill</strong>, <strong>evaluate</strong>.</p>
+    <ul>
+      <li><strong>CLI</strong> (<code>adapter_cli.py</code>): <code>subprocess.Popen</code> with new session for clean tree-kill.</li>
+      <li><strong>HTTP_API</strong> (<code>adapter_http.py</code>): REST/SSE/NDJSON with streaming consumer subprocess.</li>
+      <li><strong>PYTHON_SCRIPT</strong> (<code>adapter_python.py</code>): Thin wrapper around Python script subprocess.</li>
+      <li><strong>DOCKER</strong> (<code>adapter_docker.py</code>): <code>docker run</code> lifecycle via docker CLI inspect.</li>
+    </ul>
+
+    <h3 id="state-machine">State Machine</h3>
+    <p>Validated lifecycle transitions prevent ambiguous states:</p>
+    <pre><code>PENDING → SPAWNING → RUNNING → MONITORING → EVALUATING
+                                    ↓
+                        ┌───────────┼───────────┐
+                        ↓           ↓           ↓
+                     SUCCEEDED    FAILED      KILLED
+                                    ↓
+                                TIMED_OUT</code></pre>
+
+    <h2 id="pool-limits">Pool Limits</h2>
+    <table>
+      <thead>
+        <tr><th>Constraint</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Global cap</td><td>6 active workers total across all categories</td></tr>
+        <tr><td>CLI max</td><td>3 active (OpenCode, Codex, etc.)</td></tr>
+        <tr><td>HTTP_API max</td><td>3 active concurrent requests</td></tr>
+        <tr><td>PYTHON_SCRIPT / DOCKER</td><td>Host-limited, count toward global cap</td></tr>
+        <tr><td>Respawns</td><td>Max 2 retries per subtask</td></tr>
+        <tr><td>Phases</td><td>Ordered execution with synthesized dependency inputs</td></tr>
+      </tbody>
+    </table>
+
+    <hr class="section-divider">
+
+    <h2 id="workflow">Workflow</h2>
+
+    <h3 id="discover">Step 1: Discover & Plan</h3>
+    <pre><code>python3 scripts/discover_workers.py > .worker-registry.json</code></pre>
+    <p>Use the registry to pick available adapters, then decompose into 2–5 independent subtasks across phases.</p>
+
+    <h3 id="task-spec">Step 2: Prepare task_spec</h3>
+    <p>Each subtask is a JSON <code>task_spec</code>:</p>
+    <pre><code>{
+  "task_id": "worker-a-phase-0",
+  "phase": 0,
+  "worker_category": "CLI",
+  "adapter_name": "opencode-cli",
+  "prompt": "Implement auth endpoints...",
+  "workdir": "/tmp/worker-a",
+  "timeout_seconds": 300,
+  "rubric": {
+    "expected_output_markers": ["login", "register"],
+    "expected_files": ["auth.py"]
+  },
+  "runtime": {
+    "command": ["opencode", "run", "--dir", "/tmp/worker-a"]
+  }
+}</code></pre>
+    <p>Category-specific <code>runtime</code> blocks are documented in the Adapter Reference below.</p>
+
+    <h3 id="spawn">Step 3: Spawn via Orchestrator</h3>
+    <pre><code>python3 scripts/run_orchestrator.py --task-spec task_spec.json</code></pre>
+    <p>This runs the full lifecycle:</p>
+    <ol>
+      <li>State machine init → <code>SPAWNING</code> → <code>RUNNING</code></li>
+      <li>Monitor loop with timeout</li>
+      <li>Evaluation against rubric</li>
+      <li>Cost recording</li>
+      <li>Terminal state (<code>SUCCEEDED</code> / <code>FAILED</code> / <code>KILLED</code> / <code>TIMED_OUT</code>)</li>
+    </ol>
+
+    <h3 id="evaluate">Step 5: Evaluate</h3>
+    <table>
+      <thead>
+        <tr><th>Criterion</th><th>Scale</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Presence</strong></td><td>Pass/Fail</td><td>Did worker produce output?</td></tr>
+        <tr><td><strong>Correctness</strong></td><td>1–5</td><td>Output matches subtask?</td></tr>
+        <tr><td><strong>Completeness</strong></td><td>1–5</td><td>All parts addressed?</td></tr>
+        <tr><td><strong>Quality</strong></td><td>1–5</td><td>Professional standard?</td></tr>
+      </tbody>
+    </table>
+    <p><strong>PASS</strong> if Presence=Pass AND average >= 3.0.</p>
+
+    <h3 id="respawn">Step 6: Feedback & Respawn</h3>
+    <p>For <code>FAILED</code> workers:</p>
+    <ol>
+      <li>Analyze which rubric criteria scored low</li>
+      <li>Generate specific corrective feedback</li>
+      <li>Respawn on same or alternate provider (respecting pool caps)</li>
+    </ol>
+    <p><strong>Circuit-breaker respawns (rate-limiting):</strong></p>
+    <ul>
+      <li>Use <code>scripts/circuit_breaker.py</code> to detect API exhaustion</li>
+      <li>If rate-limited, respawn immediately on alternate provider without quality feedback</li>
+      <li>Counts against max 2 respawns per subtask</li>
+    </ul>
+    <p><strong>Respawn prompt template:</strong></p>
+    <pre><code>You previously attempted: [original task]
+Your output was insufficient because: [specific reason]
+Please redo with these corrections: [specific instructions]</code></pre>
+
+    <h3 id="synthesize">Step 8: Synthesize</h3>
+    <pre><code>python3 scripts/synthesize_outputs.py \
+  --inputs /tmp/worker-a /tmp/worker-b \
+  --output /tmp/final \
+  --type code</code></pre>
+    <p>Use <code>--phase N --dependency-inputs /tmp/phase-N-1</code> to include prior phase outputs.</p>
+
+    <hr class="section-divider">
+
+    <h2 id="adapters">Adapter Reference</h2>
+
+    <h3 id="cli-adapter">CLI Adapter</h3>
+    <p>Spawns subprocess via <code>subprocess.Popen</code> in a new session for clean tree-kill.</p>
+    <ul>
+      <li><strong>Transport:</strong> <code>pid</code>, <code>pgid</code>, <code>pty</code>, <code>invocation</code></li>
+      <li><strong>Kill:</strong> <code>os.killpg(SIGTERM)</code> → grace period → <code>SIGKILL</code></li>
+      <li><strong>Artifacts:</strong> Any files in <code>artifacts_dir</code> excluding internal logs</li>
+      <li><strong>Monitor:</strong> Checks <code>ps -p</code> to detect process exit; reads <code>.exitcode</code> sentinel if present</li>
+    </ul>
+    <p><strong>Runtime block:</strong></p>
+    <pre><code>{
+  "command": ["opencode", "--acp", "--stdio"],
+  "extra_args": ["--model", "gpt-4o"],
+  "stdin_text": "{prompt}",
+  "use_shell": false,
+  "pty": false,
+  "cwd": "."
+}</code></pre>
+
+    <h3 id="http-adapter">HTTP API Adapter</h3>
+    <p>Speaks to HTTP/S APIs (REST, SSE, NDJSON). Designed for ollama, vLLM, and any OpenAI-compatible endpoint.</p>
+    <ul>
+      <li><strong>Transport:</strong> <code>request_id</code>, <code>stream_pid</code> (background stream consumer), <code>pgid</code></li>
+      <li><strong>Spawn:</strong> Writes <code>request.json</code> for audit; for streaming protocols spawns a background consumer subprocess</li>
+      <li><strong>Monitor:</strong> Checks if stream consumer process has exited; parses JSON usage metadata for tokens</li>
+      <li><strong>Kill:</strong> SIGKILL on stream consumer process</li>
+      <li><strong>Artifacts:</strong> Response body saved to <code>stdout.log</code>; events to <code>events.jsonl</code></li>
+    </ul>
+    <p><strong>Runtime block:</strong></p>
+    <pre><code>{
+  "base_url": "http://localhost:11434",
+  "endpoint": "/api/generate",
+  "method": "POST",
+  "headers": {"Content-Type": "application/json"},
+  "payload": {"model": "llama3.1", "stream": true},
+  "stream_protocol": "sse"
+}</code></pre>
+
+    <h3 id="python-adapter">Python Script Adapter</h3>
+    <p>Subprocess wrapper for arbitrary Python scripts.</p>
+    <ul>
+      <li><strong>Transport:</strong> <code>pid</code>, <code>pgid</code>, <code>invocation</code></li>
+      <li><strong>Use case:</strong> Custom inference scripts, data processors, local model frontends</li>
+      <li><strong>Args:</strong> Supports <code>{task_spec_file}</code> placeholder substitution</li>
+    </ul>
+    <p><strong>Runtime block:</strong></p>
+    <pre><code>{
+  "script_path": "/path/to/worker.py",
+  "interpreter": "python3",
+  "args": ["--task-spec", "{task_spec_file}"],
+  "stdin_text": "{prompt}"
+}</code></pre>
+
+    <h3 id="docker-adapter">Docker Adapter</h3>
+    <p>Wraps <code>docker run</code> lifecycle.</p>
+    <ul>
+      <li><strong>Transport:</strong> <code>container_name</code>, <code>docker_cmd</code>, <code>local_pid</code>, <code>pgid</code></li>
+      <li><strong>Monitor:</strong> <code>docker inspect</code> to read container <code>State.Status</code> and <code>ExitCode</code></li>
+      <li><strong>Kill:</strong> <code>docker stop -t 5</code> → <code>docker kill</code></li>
+      <li><strong>Mounting:</strong> <code>runtime.mounts</code> array with <code>source</code>, <code>target</code>, <code>mode</code></li>
+    </ul>
+    <p><strong>Runtime block:</strong></p>
+    <pre><code>{
+  "image": "ghcr.io/someorg/inference-worker:latest",
+  "entrypoint": ["python3", "worker.py"],
+  "command": ["--mode", "generate"],
+  "mounts": [{"source": "/host/data", "target": "/data", "mode": "ro"}],
+  "env": {"API_KEY": "***"},
+  "network": "bridge",
+  "user": "1000:1000"
+}</code></pre>
+
+    <h3 id="new-adapter">Adding a New Adapter</h3>
+    <ol>
+      <li>Create <code>scripts/adapter_&lt;category&gt;.py</code></li>
+      <li>Implement <code>spawn</code>, <code>monitor</code>, <code>kill</code>, <code>evaluate</code></li>
+      <li>Add to <code>_resolve_adapter()</code> in <code>run_orchestrator.py</code></li>
+      <li>Add to <code>discover_workers.py</code> detection logic</li>
+      <li>Update documentation with transport schema and test notes</li>
+    </ol>
+
+    <hr class="section-divider">
+
+    <h2 id="capabilities">Capability Matrix</h2>
+    <table>
+      <thead>
+        <tr><th>Category</th><th>Adapter</th><th>Local/Remote</th><th>Streaming</th><th>Token Cost</th><th>Concurrent</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>CLI</td><td><code>adapter_cli.py</code></td><td>Local</td><td>No</td><td>Worker-configured</td><td>Up to 6</td></tr>
+        <tr><td>HTTP_API</td><td><code>adapter_http.py</code></td><td>Both</td><td>SSE, NDJSON</td><td>Per-model</td><td>Provider-dependent</td></tr>
+        <tr><td>PYTHON_SCRIPT</td><td><code>adapter_python.py</code></td><td>Local</td><td>No</td><td>0</td><td>Host-limited</td></tr>
+        <tr><td>DOCKER</td><td><code>adapter_docker.py</code></td><td>Both</td><td>Via stdout</td><td>0 (local infra)</td><td>Host-limited</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="cli-workers">Detected CLI Workers</h3>
+    <table>
+      <thead>
+        <tr><th>Tool</th><th>Binary</th><th>Detect Command</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>OpenCode</td><td><code>opencode</code></td><td><code>which opencode</code></td></tr>
+        <tr><td>Codex</td><td><code>codex</code></td><td><code>which codex</code></td></tr>
+        <tr><td>Claude Code</td><td><code>claude</code></td><td><code>which claude</code></td></tr>
+        <tr><td>Gemini CLI</td><td><code>gemini</code></td><td><code>which gemini</code></td></tr>
+        <tr><td>Continue</td><td><code>cn</code></td><td><code>which cn</code></td></tr>
+        <tr><td>Cline</td><td><code>cline</code></td><td><code>which cline</code></td></tr>
+        <tr><td>Cursor Agent</td><td><code>agent</code></td><td><code>which agent</code></td></tr>
+        <tr><td>Aider</td><td><code>aider</code></td><td><code>which aider</code></td></tr>
+        <tr><td>Goose</td><td><code>goose</code></td><td><code>which goose</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="http-endpoints">HTTP API Endpoints</h3>
+    <table>
+      <thead>
+        <tr><th>Service</th><th>Base URL</th><th>Endpoint</th><th>Protocol</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>ollama</td><td><code>http://localhost:11434</code></td><td><code>/api/generate</code>, <code>/api/chat</code></td><td>SSE + JSON</td></tr>
+        <tr><td>vLLM</td><td><code>http://localhost:8000</code></td><td><code>/v1/completions</code>, <code>/v1/chat/completions</code></td><td>SSE (OpenAI-compatible)</td></tr>
+        <tr><td>OpenAI</td><td><code>https://api.openai.com/v1</code></td><td><code>/chat/completions</code></td><td>SSE</td></tr>
+        <tr><td>Anthropic</td><td><code>https://api.anthropic.com/v1</code></td><td><code>/messages</code></td><td>SSE</td></tr>
+        <tr><td>Groq</td><td><code>https://api.groq.com/openai/v1</code></td><td><code>/chat/completions</code></td><td>SSE</td></tr>
+        <tr><td>Gemini</td><td><code>https://generativelanguage.googleapis.com/v1beta</code></td><td><code>/models/...:generateContent</code></td><td>blocking JSON</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="cost-rates">Cost Rates (USD per 1M tokens)</h3>
+    <table>
+      <thead>
+        <tr><th>Provider:Model</th><th>Input</th><th>Output</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>openai:gpt-4.1</code></td><td>$2.00</td><td>$8.00</td></tr>
+        <tr><td><code>openai:gpt-4o</code></td><td>$2.50</td><td>$10.00</td></tr>
+        <tr><td><code>openai:gpt-4o-mini</code></td><td>$0.15</td><td>$0.60</td></tr>
+        <tr><td><code>anthropic:claude-sonnet-4</code></td><td>$3.00</td><td>$15.00</td></tr>
+        <tr><td><code>anthropic:claude-opus-4</code></td><td>$15.00</td><td>$75.00</td></tr>
+        <tr><td><code>deepseek:deepseek-chat</code></td><td>$0.27</td><td>$1.10</td></tr>
+        <tr><td><code>google:gemini-2.5-pro</code></td><td>$1.25</td><td>$10.00</td></tr>
+        <tr><td><code>groq:llama-4-scout</code></td><td>$0.13</td><td>$0.34</td></tr>
+        <tr><td><code>local:*</code></td><td>$0.00</td><td>$0.00</td></tr>
+      </tbody>
+    </table>
+    <p>Rates are best-effort. Actual API costs may vary by region and provider updates.</p>
+
+    <hr class="section-divider">
+
+    <h2 id="safety">Safety & Limits</h2>
+    <ul>
+      <li>Max 6 active workers total</li>
+      <li>Max 2 respawns per subtask</li>
+      <li>Kill stuck workers after timeout</li>
+      <li>Clean up temp dirs after synthesis</li>
+      <li>Workers are sandboxed — copy required files into workdir before spawn</li>
+      <li>Codex requires git — <code>git init</code> in workdir when using Codex CLI</li>
+      <li>Always diff+merge config files when multiple workers modify the same file</li>
+    </ul>
+
+    <h2 id="pitfalls">Pitfalls & Lessons Learned</h2>
+    <p><strong><code>terminal(background=true)</code> with opencode hangs indefinitely.</strong><br>Use <code>execute_code</code> + <code>subprocess.Popen</code> with stdin piping instead.</p>
+    <p><strong>Shell quoting with multi-line prompts is fragile.</strong><br>Always pipe prompts via stdin file, never as positional shell arguments.</p>
+    <p><strong>Multiple workers modifying the same config files will overwrite each other.</strong><br>Diff and merge rather than blind copy.</p>
+    <p><strong>Workers may create tests with wrong assumptions about function names/APIs.</strong><br>Verify test imports against actual source exports after generation.</p>
+    <p><strong>Worker sandboxing is strict.</strong><br>OpenCode cannot read files outside its workdir. Copy required files before spawn.</p>
+    <p><strong>Synthesis picks up node_modules noise.</strong><br>Instruct workers to write findings to a SPECIFIC file and read only that file.</p>
+    <p><strong>Provider API rate limits hang workers silently.</strong><br>Set aggressive timeouts when quotas are tight. Use circuit-breaker to detect and swap providers.</p>
+    <p><strong>Lean copied workdirs can break npm/TypeScript verification.</strong><br>If compilation is required, copy <code>node_modules</code> too or run <code>npm install</code> in workdir. Otherwise do authoritative verification in the real repo after merging.</p>
+
+  </main>
+</div>
+
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-left">UNIVERSAL WORKER ORCHESTRATOR — MIT LICENSE</div>
+    <div class="footer-right">
+      <a href="/docs.html">Docs</a>
+      <a href="/eval.html">Eval</a>
+      <a href="https://gitlab.com/hackafrik/universal-worker-orchestrator" target="_blank" rel="noopener">GitLab</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const links = document.querySelectorAll('.sidebar-nav a');
+const sections = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.sidebar-nav a[href="#${entry.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
