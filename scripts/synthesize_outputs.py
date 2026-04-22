@@ -144,6 +144,10 @@ def main():
     parser.add_argument("--output", required=True, help="Output directory for synthesized result")
     parser.add_argument("--type", choices=["code", "report", "docs"], default="code",
                         help="Type of synthesis to perform")
+    parser.add_argument("--phase", type=int, default=None,
+                        help="Phase number for this synthesis (used for phase-based orchestration)")
+    parser.add_argument("--dependency-inputs", nargs="*", default=[],
+                        help="Previous phase output directories to include as context")
     args = parser.parse_args()
 
     # Validate inputs
